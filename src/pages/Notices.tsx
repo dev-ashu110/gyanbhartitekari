@@ -1,9 +1,19 @@
+import { useState, useEffect } from 'react';
 import { Calendar, AlertCircle, Pin } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
 export default function Notices() {
-  const notices = [
+  const [notices, setNotices] = useState<any[]>([]);
+
+  useEffect(() => {
+    // Load notices from localStorage
+    const saved = localStorage.getItem('schoolNotices');
+    if (saved) {
+      setNotices(JSON.parse(saved));
+    } else {
+      // Default notices if none in localStorage
+      setNotices([
     {
       id: 1,
       title: 'Annual Day Celebration 2024',
@@ -58,7 +68,9 @@ export default function Notices() {
       content:
         'Library will be open until 5:00 PM from Monday to Friday for students who wish to study. Additional reading materials and digital resources have been added.',
     },
-  ];
+  ]);
+    }
+  }, []);
 
   const getCategoryColor = (category: string) => {
     const colors: { [key: string]: string } = {

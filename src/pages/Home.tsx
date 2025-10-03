@@ -1,19 +1,12 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { GraduationCap, BookOpen, Users, Award, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { HeroGlass } from '@/components/HeroGlass';
+import { CardGlass } from '@/components/CardGlass';
 import heroImage from '@/assets/hero-school.jpg';
 
 export default function Home() {
-  const [scrollY, setScrollY] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   const quickLinks = [
     { icon: BookOpen, title: 'Admissions', path: '/admissions', description: 'Join our school family' },
     { icon: GraduationCap, title: 'Academics', path: '/academics', description: 'Explore our programs' },
@@ -30,51 +23,16 @@ export default function Home() {
 
   return (
     <main className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Parallax Background */}
-        <div
-          className="absolute inset-0 z-0"
-          style={{
-            transform: `translateY(${scrollY * 0.5}px)`,
-          }}
-        >
-          <img
-            src={heroImage}
-            alt="Gyan Bharti School Campus"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/50 to-background"></div>
-          <div className="absolute inset-0 gradient-mesh"></div>
-        </div>
-
-        {/* Hero Content */}
-        <div className="container mx-auto px-4 relative z-10 text-center pt-32 pb-20">
-          <div
-            className="animate-in fade-in slide-in-from-bottom duration-1000"
-            style={{ animationDelay: '200ms' }}
-          >
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-              <span className="text-gradient">Gyan Bharti</span>
-              <br />
-              Senior Secondary School
-            </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Excellence in Education • Nurturing Minds • Building Futures
-            </p>
-            <div className="flex flex-wrap gap-4 justify-center">
-              <Button asChild size="lg" className="rounded-full text-lg px-8">
-                <Link to="/admissions">
-                  Admissions Open <ChevronRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="rounded-full text-lg px-8 glass">
-                <Link to="/about">Learn More</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Hero Section with Advanced Glassmorphism */}
+      <HeroGlass
+        backgroundImage={heroImage}
+        title="Gyan Bharti Senior Secondary School"
+        subtitle="Excellence in Education • Nurturing Minds • Building Futures"
+        ctaText="Admissions Open"
+        ctaLink="/admissions"
+        secondaryCtaText="Learn More"
+        secondaryCtaLink="/about"
+      />
 
       {/* Quick Links Section */}
       <section className="py-20 relative">
@@ -83,18 +41,13 @@ export default function Home() {
             {quickLinks.map((link, index) => {
               const Icon = link.icon;
               return (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className="group"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <Card className="glass p-6 hover:glass-strong transition-all duration-300 hover:scale-105 hover:-translate-y-2 h-full">
-                    <Icon className="h-12 w-12 text-primary mb-4 group-hover:scale-110 transition-transform" />
+                <Link key={link.path} to={link.path}>
+                  <CardGlass delay={index * 0.1}>
+                    <Icon className="h-12 w-12 text-primary mb-4 transition-transform group-hover:scale-110" />
                     <h3 className="text-xl font-bold mb-2 text-foreground">{link.title}</h3>
                     <p className="text-muted-foreground">{link.description}</p>
-                    <ChevronRight className="h-5 w-5 text-primary mt-4 group-hover:translate-x-2 transition-transform" />
-                  </Card>
+                    <ChevronRight className="h-5 w-5 text-primary mt-4 transition-transform group-hover:translate-x-2" />
+                  </CardGlass>
                 </Link>
               );
             })}

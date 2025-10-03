@@ -1,0 +1,166 @@
+/**
+ * Advanced Glassmorphism Styles
+ * CSS Custom Properties for Light/Dark Theme Support
+ */
+
+/* Base theme variables */
+[data-theme="light"] {
+  --glass-background: rgba(255, 255, 255, 0.4);
+  --glass-background-strong: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(59, 130, 246, 0.2);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --gradient-mask-1: rgba(59, 130, 246, 0.3);
+  --gradient-mask-2: rgba(139, 92, 246, 0.25);
+  --gradient-mask-3: rgba(236, 72, 153, 0.2);
+}
+
+[data-theme="dark"] {
+  --glass-background: rgba(17, 24, 39, 0.4);
+  --glass-background-strong: rgba(17, 24, 39, 0.6);
+  --glass-border: rgba(59, 130, 246, 0.3);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --gradient-mask-1: rgba(59, 130, 246, 0.3);
+  --gradient-mask-2: rgba(139, 92, 246, 0.25);
+  --gradient-mask-3: rgba(236, 72, 153, 0.2);
+}
+
+/* Glassmorphism Effects */
+.glass-effect {
+  background: var(--glass-background);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-effect-strong {
+  background: var(--glass-background-strong);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+/* Gradient Mesh Overlays */
+.gradient-overlay-1 {
+  background: radial-gradient(
+    circle at 20% 30%,
+    var(--gradient-mask-1) 0px,
+    transparent 50%
+  );
+  filter: blur(80px);
+}
+
+.gradient-overlay-2 {
+  background: radial-gradient(
+    circle at 80% 70%,
+    var(--gradient-mask-2) 0px,
+    transparent 50%
+  );
+  filter: blur(80px);
+}
+
+.gradient-overlay-3 {
+  background: radial-gradient(
+    circle at 50% 50%,
+    var(--gradient-mask-3) 0px,
+    transparent 50%
+  );
+  filter: blur(80px);
+}
+
+/* Liquid Morphing Animation */
+@keyframes liquid-morph {
+  0%,
+  100% {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  }
+  25% {
+    border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+  }
+  50% {
+    border-radius: 50% 40% 50% 60% / 40% 50% 70% 50%;
+  }
+  75% {
+    border-radius: 40% 70% 40% 50% / 60% 40% 60% 50%;
+  }
+}
+
+.liquid-animation {
+  animation: liquid-morph 8s ease-in-out infinite;
+}
+
+/* Frosted Glass Navigation */
+.nav-frosted {
+  background: var(--glass-background-strong);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Parallax Layers */
+.parallax-layer-1 {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.parallax-layer-2 {
+  transform: translateZ(-1px) scale(2);
+  will-change: transform;
+}
+
+.parallax-layer-3 {
+  transform: translateZ(-2px) scale(3);
+  will-change: transform;
+}
+
+/* Smooth Transitions */
+.theme-transition {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Performance Optimizations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Hover Effects */
+.glass-hover-effect {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-hover-effect:hover {
+  background: var(--glass-background-strong);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Focus States for Accessibility */
+.glass-focus:focus-visible {
+  outline: 2px solid var(--glass-border);
+  outline-offset: 2px;
+}
+
+/* Responsive Blur Levels */
+@media (max-width: 768px) {
+  .glass-effect,
+  .glass-effect-strong {
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .liquid-animation {
+    animation: none;
+  }
+  
+  .glass-hover-effect,
+  .theme-transition {
+    transition: none;
+  }
+}
