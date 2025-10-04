@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from './ThemeToggle';
 import { LiquidToggle } from './LiquidToggle';
+import { BlurIntensityToggle } from './BlurIntensityToggle';
 import logoPlaceholder from '@/assets/logo-placeholder.png';
 
 export const NavLiquid = () => {
@@ -100,6 +101,7 @@ export const NavLiquid = () => {
 
             {/* Controls */}
             <div className="flex items-center space-x-2">
+              <BlurIntensityToggle />
               <LiquidToggle onToggle={setLiquidEffect} />
               <ThemeToggle />
 
