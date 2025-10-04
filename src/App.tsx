@@ -16,6 +16,9 @@ import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import StudentPortfolio from "./pages/StudentPortfolio";
+import Auth from "./pages/Auth";
+import { MouseFollower } from "./components/MouseFollower";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +29,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <div className="min-h-screen flex flex-col w-full relative">
+          <MouseFollower />
           <ParallaxLayers />
           <NavLiquid />
           <div className="relative z-10">
@@ -39,6 +43,8 @@ const App = () => (
               <Route path="/gallery" element={<Gallery />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/student-portfolio" element={<StudentPortfolio />} />
+              <Route path="/auth" element={<Auth />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

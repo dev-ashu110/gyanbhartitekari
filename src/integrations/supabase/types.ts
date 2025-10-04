@@ -14,7 +14,101 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      student_data: {
+        Row: {
+          admission_no: string
+          class: string
+          created_at: string
+          id: string
+          parent_email: string | null
+          parent_phone: string | null
+          roll_no: string
+          section: string
+          student_name: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          admission_no: string
+          class: string
+          created_at?: string
+          id?: string
+          parent_email?: string | null
+          parent_phone?: string | null
+          roll_no: string
+          section: string
+          student_name: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          admission_no?: string
+          class?: string
+          created_at?: string
+          id?: string
+          parent_email?: string | null
+          parent_phone?: string | null
+          roll_no?: string
+          section?: string
+          student_name?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      student_portfolios: {
+        Row: {
+          assignment_type: string | null
+          created_at: string
+          description: string | null
+          file_name: string | null
+          file_type: string | null
+          file_url: string | null
+          id: string
+          student_id: string | null
+          subject: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assignment_type?: string | null
+          created_at?: string
+          description?: string | null
+          file_name?: string | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: string
+          student_id?: string | null
+          subject?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assignment_type?: string | null
+          created_at?: string
+          description?: string | null
+          file_name?: string | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: string
+          student_id?: string | null
+          subject?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_portfolios_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "student_data"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

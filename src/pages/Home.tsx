@@ -1,12 +1,35 @@
 import { Link } from 'react-router-dom';
+import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import { GraduationCap, BookOpen, Users, Award, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { HeroGlass } from '@/components/HeroGlass';
 import { CardGlass } from '@/components/CardGlass';
-import heroImage from '@/assets/hero-school.jpg';
+import { useEffect } from 'react';
 
 export default function Home() {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const x1 = useTransform(mouseX, [0, typeof window !== 'undefined' ? window.innerWidth : 1920], [-100, 100]);
+  const y1 = useTransform(mouseY, [0, typeof window !== 'undefined' ? window.innerHeight : 1080], [-100, 100]);
+  const x2 = useTransform(mouseX, [0, typeof window !== 'undefined' ? window.innerWidth : 1920], [-50, 50]);
+  const y2 = useTransform(mouseY, [0, typeof window !== 'undefined' ? window.innerHeight : 1080], [-50, 50]);
+
+  const springX1 = useSpring(x1, { stiffness: 50, damping: 30 });
+  const springY1 = useSpring(y1, { stiffness: 50, damping: 30 });
+  const springX2 = useSpring(x2, { stiffness: 100, damping: 30 });
+  const springY2 = useSpring(y2, { stiffness: 100, damping: 30 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseX.set(e.clientX);
+      mouseY.set(e.clientY);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [mouseX, mouseY]);
+
   const quickLinks = [
     { icon: BookOpen, title: 'Admissions', path: '/admissions', description: 'Join our school family' },
     { icon: GraduationCap, title: 'Academics', path: '/academics', description: 'Explore our programs' },
@@ -23,16 +46,128 @@ export default function Home() {
 
   return (
     <main className="min-h-screen">
-      {/* Hero Section with Advanced Glassmorphism */}
-      <HeroGlass
-        backgroundImage={heroImage}
-        title="Gyan Bharti Senior Secondary School"
-        subtitle="Excellence in Education • Nurturing Minds • Building Futures"
-        ctaText="Admissions Open"
-        ctaLink="/admissions"
-        secondaryCtaText="Learn More"
-        secondaryCtaLink="/about"
-      />
+      {/* Hero Section with Circular Gradient Masks */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+        {/* Animated gradient blobs */}
+        <motion.div
+          className="absolute w-[600px] h-[600px] rounded-full opacity-30 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, transparent 70%)',
+            filter: 'blur(80px)',
+            x: springX1,
+            y: springY1,
+            top: '20%',
+            left: '10%',
+          }}
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.5, 0.3],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+        
+        <motion.div
+          className="absolute w-[500px] h-[500px] rounded-full opacity-30 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.4) 0%, transparent 70%)',
+            filter: 'blur(80px)',
+            x: springX2,
+            y: springY2,
+            top: '50%',
+            right: '10%',
+          }}
+          animate={{
+            scale: [1.2, 1, 1.2],
+            opacity: [0.5, 0.3, 0.5],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+
+        <motion.div
+          className="absolute w-[400px] h-[400px] rounded-full opacity-30 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(236, 72, 153, 0.3) 0%, transparent 70%)',
+            filter: 'blur(80px)',
+            bottom: '10%',
+            left: '30%',
+          }}
+          animate={{
+            scale: [1, 1.3, 1],
+            opacity: [0.2, 0.4, 0.2],
+          }}
+          transition={{
+            duration: 12,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+
+        {/* Hero Content */}
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-center max-w-4xl mx-auto"
+          >
+            <motion.h1
+              className="text-5xl md:text-7xl font-bold mb-6"
+              animate={{
+                backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+              }}
+              transition={{
+                duration: 5,
+                repeat: Infinity,
+                ease: 'linear',
+              }}
+              style={{
+                background: 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary)))',
+                backgroundSize: '200% auto',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
+            >
+              Welcome to Gyan Bharti
+            </motion.h1>
+            
+            <motion.p
+              className="text-xl md:text-2xl text-muted-foreground mb-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.8 }}
+            >
+              A Seat of Learning - Empowering Minds, Building Futures
+            </motion.p>
+
+            <motion.div
+              className="flex flex-wrap gap-4 justify-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.8 }}
+            >
+              <Link to="/admissions">
+                <Button size="lg" className="glass-strong">
+                  Admissions Open
+                </Button>
+              </Link>
+              <Link to="/contact">
+                <Button size="lg" variant="outline" className="glass-effect">
+                  Contact Us
+                </Button>
+              </Link>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
 
       {/* Quick Links Section */}
       <section className="py-20 relative">

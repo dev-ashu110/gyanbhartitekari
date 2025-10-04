@@ -74,20 +74,25 @@
   0%,
   100% {
     border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    transform: rotate(0deg);
   }
   25% {
     border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+    transform: rotate(5deg);
   }
   50% {
     border-radius: 50% 40% 50% 60% / 40% 50% 70% 50%;
+    transform: rotate(-5deg);
   }
   75% {
     border-radius: 40% 70% 40% 50% / 60% 40% 60% 50%;
+    transform: rotate(3deg);
   }
 }
 
 .liquid-animation {
   animation: liquid-morph 8s ease-in-out infinite;
+  transform-style: preserve-3d;
 }
 
 /* Frosted Glass Navigation */
@@ -130,12 +135,22 @@
 /* Hover Effects */
 .glass-hover-effect {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
 }
 
 .glass-hover-effect:hover {
   background: var(--glass-background-strong);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px) translateZ(20px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.hover-scale {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.hover-scale:hover {
+  transform: scale(1.02) translateZ(10px);
 }
 
 /* Focus States for Accessibility */
@@ -193,13 +208,17 @@
 
 /* Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
-  .liquid-animation {
+  .liquid-animation,
+  .liquid-morph {
     animation: none;
+    transform: none;
   }
   
   .glass-hover-effect,
-  .theme-transition {
+  .theme-transition,
+  .hover-scale {
     transition: none;
+    transform: none;
   }
 
   .parallax-layer {

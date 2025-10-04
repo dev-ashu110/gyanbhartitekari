@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ThemeToggle } from './ThemeToggle';
 import { LiquidToggle } from './LiquidToggle';
 import { BlurIntensityToggle } from './BlurIntensityToggle';
-import logoPlaceholder from '@/assets/logo-placeholder.png';
+import schoolLogo from '@/assets/school-logo.png';
 
 export const NavLiquid = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -31,6 +31,7 @@ export const NavLiquid = () => {
     { name: 'Events', path: '/events' },
     { name: 'Gallery', path: '/gallery' },
     { name: 'Contact', path: '/contact' },
+    { name: 'Student Portfolio', path: '/student-portfolio' },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -68,11 +69,11 @@ export const NavLiquid = () => {
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-3 z-10">
               <motion.img
-                src={logoPlaceholder}
+                src={schoolLogo}
                 alt="Gyan Bharti School"
-                className="h-10 w-10 object-contain"
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                transition={{ duration: 0.3 }}
+                className="h-12 w-12 object-contain rounded-full"
+                whileHover={{ scale: 1.1, rotate: 360 }}
+                transition={{ duration: 0.6, type: "spring" }}
               />
               <div className="flex flex-col">
                 <span className="font-bold text-lg leading-tight text-foreground">Gyan Bharti</span>
