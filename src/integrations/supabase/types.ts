@@ -16,12 +16,17 @@ export type Database = {
     Tables: {
       student_data: {
         Row: {
+          achievements: string[] | null
           admission_no: string
+          bio: string | null
           class: string
           created_at: string
+          github_url: string | null
           id: string
           parent_email: string | null
           parent_phone: string | null
+          portfolio_url: string | null
+          profile_picture_url: string | null
           roll_no: string
           section: string
           student_name: string
@@ -29,12 +34,17 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          achievements?: string[] | null
           admission_no: string
+          bio?: string | null
           class: string
           created_at?: string
+          github_url?: string | null
           id?: string
           parent_email?: string | null
           parent_phone?: string | null
+          portfolio_url?: string | null
+          profile_picture_url?: string | null
           roll_no: string
           section: string
           student_name: string
@@ -42,12 +52,17 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          achievements?: string[] | null
           admission_no?: string
+          bio?: string | null
           class?: string
           created_at?: string
+          github_url?: string | null
           id?: string
           parent_email?: string | null
           parent_phone?: string | null
+          portfolio_url?: string | null
+          profile_picture_url?: string | null
           roll_no?: string
           section?: string
           student_name?: string
@@ -109,15 +124,92 @@ export type Database = {
           },
         ]
       }
+      student_projects: {
+        Row: {
+          created_at: string
+          description: string | null
+          github_url: string | null
+          id: string
+          image_url: string | null
+          project_url: string | null
+          student_id: string | null
+          tech_stack: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          github_url?: string | null
+          id?: string
+          image_url?: string | null
+          project_url?: string | null
+          student_id?: string | null
+          tech_stack?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          github_url?: string | null
+          id?: string
+          image_url?: string | null
+          project_url?: string | null
+          student_id?: string | null
+          tech_stack?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_projects_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "student_data"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "teacher" | "student"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -244,6 +336,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "teacher", "student"],
+    },
   },
 } as const

@@ -155,7 +155,7 @@ export default function Home() {
               transition={{ delay: 0.6, duration: 0.8 }}
             >
               <Link to="/admissions">
-                <Button size="lg" className="glass-strong">
+                <Button size="lg" className="btn-primary">
                   Admissions Open
                 </Button>
               </Link>

@@ -40,6 +40,7 @@ All colors MUST be HSL.
 
     --glass-bg: 0 0% 100%;
     --glass-border: 217 91% 60%;
+    --glass-bg-strong: 0 0% 95%;
     --gradient-start: 217 91% 60%;
     --gradient-mid: 271 81% 56%;
     --gradient-end: 329 86% 70%;
@@ -76,6 +77,7 @@ All colors MUST be HSL.
 
     --glass-bg: 222 47% 10%;
     --glass-border: 217 91% 60%;
+    --glass-bg-strong: 222 47% 15%;
     --gradient-start: 217 91% 60%;
     --gradient-mid: 271 81% 56%;
     --gradient-end: 329 86% 70%;
@@ -98,7 +100,11 @@ All colors MUST be HSL.
   }
   
   .glass-strong {
-    @apply bg-glass-bg/60 backdrop-blur-2xl border border-glass-border/30 shadow-xl;
+    @apply bg-primary/10 backdrop-blur-2xl border border-primary/30 shadow-xl text-foreground;
+  }
+  
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90;
   }
 
   .gradient-primary {

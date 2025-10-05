@@ -18,6 +18,8 @@ import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import StudentPortfolio from "./pages/StudentPortfolio";
 import Auth from "./pages/Auth";
+import AdminDashboard from "./pages/AdminDashboard";
+import PublicProfile from "./pages/PublicProfile";
 import { MouseFollower } from "./components/MouseFollower";
 
 const queryClient = new QueryClient();
@@ -45,6 +47,8 @@ const App = () => (
               <Route path="/admin" element={<Admin />} />
               <Route path="/student-portfolio" element={<StudentPortfolio />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/admin-dashboard" element={<AdminDashboard />} />
+              <Route path="/profile/:studentId" element={<PublicProfile />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
