@@ -1,6 +1,7 @@
 import { BookOpen, Users, Clock, Award } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import academicsBg from '@/assets/academics-bg.jpg';
+import PageWrapper from '@/components/PageWrapper';
 
 export default function Academics() {
   const classes = [
@@ -30,7 +31,8 @@ export default function Academics() {
   ];
 
   return (
-    <main className="min-h-screen pt-32 pb-20">
+    <PageWrapper>
+      <main className="min-h-screen pt-32 pb-20">
       <div className="container mx-auto px-4">
         {/* Header with Background */}
         <div className="relative mb-16 rounded-3xl overflow-hidden">
@@ -146,5 +148,6 @@ export default function Academics() {
         </Card>
       </div>
     </main>
+    </PageWrapper>
   );
 }

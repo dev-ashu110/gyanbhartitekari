@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { NavLiquid } from "@/components/NavLiquid";
 import { Footer } from "@/components/Footer";
 import { ParallaxLayers } from "@/components/ParallaxLayers";
+import GlobalBackground from "@/components/GlobalBackground";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Admissions from "./pages/Admissions";
@@ -31,6 +32,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <div className="min-h-screen flex flex-col w-full relative">
+          <GlobalBackground />
           <MouseFollower />
           <ParallaxLayers />
           <NavLiquid />

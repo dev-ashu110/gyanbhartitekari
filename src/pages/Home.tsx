@@ -1,34 +1,12 @@
 import { Link } from 'react-router-dom';
-import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { GraduationCap, BookOpen, Users, Award, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { CardGlass } from '@/components/CardGlass';
-import { useEffect } from 'react';
+import PageWrapper from '@/components/PageWrapper';
 
 export default function Home() {
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  const x1 = useTransform(mouseX, [0, typeof window !== 'undefined' ? window.innerWidth : 1920], [-100, 100]);
-  const y1 = useTransform(mouseY, [0, typeof window !== 'undefined' ? window.innerHeight : 1080], [-100, 100]);
-  const x2 = useTransform(mouseX, [0, typeof window !== 'undefined' ? window.innerWidth : 1920], [-50, 50]);
-  const y2 = useTransform(mouseY, [0, typeof window !== 'undefined' ? window.innerHeight : 1080], [-50, 50]);
-
-  const springX1 = useSpring(x1, { stiffness: 50, damping: 30 });
-  const springY1 = useSpring(y1, { stiffness: 50, damping: 30 });
-  const springX2 = useSpring(x2, { stiffness: 100, damping: 30 });
-  const springY2 = useSpring(y2, { stiffness: 100, damping: 30 });
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [mouseX, mouseY]);
 
   const quickLinks = [
     { icon: BookOpen, title: 'Admissions', path: '/admissions', description: 'Join our school family' },
@@ -45,73 +23,12 @@ export default function Home() {
   ];
 
   return (
-    <main className="min-h-screen">
-      {/* Hero Section with Circular Gradient Masks */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-        {/* Animated gradient blobs */}
-        <motion.div
-          className="absolute w-[600px] h-[600px] rounded-full opacity-30 pointer-events-none"
-          style={{
-            background: 'radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, transparent 70%)',
-            filter: 'blur(80px)',
-            x: springX1,
-            y: springY1,
-            top: '20%',
-            left: '10%',
-          }}
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-        
-        <motion.div
-          className="absolute w-[500px] h-[500px] rounded-full opacity-30 pointer-events-none"
-          style={{
-            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.4) 0%, transparent 70%)',
-            filter: 'blur(80px)',
-            x: springX2,
-            y: springY2,
-            top: '50%',
-            right: '10%',
-          }}
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.5, 0.3, 0.5],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-
-        <motion.div
-          className="absolute w-[400px] h-[400px] rounded-full opacity-30 pointer-events-none"
-          style={{
-            background: 'radial-gradient(circle, rgba(236, 72, 153, 0.3) 0%, transparent 70%)',
-            filter: 'blur(80px)',
-            bottom: '10%',
-            left: '30%',
-          }}
-          animate={{
-            scale: [1, 1.3, 1],
-            opacity: [0.2, 0.4, 0.2],
-          }}
-          transition={{
-            duration: 12,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-
-        {/* Hero Content */}
-        <div className="container mx-auto px-4 relative z-10">
+    <PageWrapper>
+      <main className="min-h-screen">
+        {/* Hero Section */}
+        <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+          {/* Hero Content */}
+          <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
@@ -230,5 +147,6 @@ export default function Home() {
         </div>
       </section>
     </main>
+    </PageWrapper>
   );
 }

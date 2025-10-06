@@ -1,6 +1,7 @@
 import { MapPin, Phone, Mail, Clock } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { ContactForm } from '@/components/ContactForm';
+import PageWrapper from '@/components/PageWrapper';
 
 export default function Contact() {
   const contactInfo = [
@@ -29,7 +30,8 @@ export default function Contact() {
   ];
 
   return (
-    <main className="min-h-screen pt-32 pb-20">
+    <PageWrapper>
+      <main className="min-h-screen pt-32 pb-20">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-16 animate-in fade-in slide-in-from-bottom duration-1000">
@@ -108,5 +110,6 @@ export default function Contact() {
         </Card>
       </div>
     </main>
+    </PageWrapper>
   );
 }

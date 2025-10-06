@@ -1,5 +1,6 @@
 import { Award, Target, Heart, BookOpen } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import PageWrapper from '@/components/PageWrapper';
 
 export default function About() {
   const values = [
@@ -26,9 +27,10 @@ export default function About() {
   ];
 
   return (
-    <main className="min-h-screen pt-32 pb-20">
-      <div className="container mx-auto px-4">
-        {/* Header */}
+    <PageWrapper>
+      <main className="min-h-screen pt-32 pb-20">
+        <div className="container mx-auto px-4">
+          {/* Header */}
         <div className="text-center mb-16 animate-in fade-in slide-in-from-bottom duration-1000">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 text-gradient">About Us</h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -133,5 +135,6 @@ export default function About() {
         </div>
       </div>
     </main>
+    </PageWrapper>
   );
 }
