@@ -80,10 +80,10 @@ export default function PublicProfile() {
       if (projectsError) throw projectsError;
       setProjects(projectsData || []);
 
-      // Fetch portfolios
+      // Fetch portfolios (excluding user_id and student_id for security)
       const { data: portfoliosData, error: portfoliosError } = await supabase
         .from('student_portfolios')
-        .select('*')
+        .select('id, title, description, file_url, file_type, subject, assignment_type, created_at')
         .eq('student_id', studentId)
         .order('created_at', { ascending: false });
 

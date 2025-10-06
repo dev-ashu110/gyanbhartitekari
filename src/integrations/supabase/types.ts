@@ -126,6 +126,13 @@ export type Database = {
             foreignKeyName: "student_portfolios_student_id_fkey"
             columns: ["student_id"]
             isOneToOne: false
+            referencedRelation: "student_data_for_teachers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_portfolios_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
             referencedRelation: "student_public_profiles"
             referencedColumns: ["id"]
           },
@@ -183,6 +190,13 @@ export type Database = {
             foreignKeyName: "student_projects_student_id_fkey"
             columns: ["student_id"]
             isOneToOne: false
+            referencedRelation: "student_data_for_teachers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_projects_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
             referencedRelation: "student_public_profiles"
             referencedColumns: ["id"]
           },
@@ -211,6 +225,96 @@ export type Database = {
       }
     }
     Views: {
+      student_data_for_teachers: {
+        Row: {
+          achievements: string[] | null
+          admission_no: string | null
+          bio: string | null
+          class: string | null
+          created_at: string | null
+          github_url: string | null
+          id: string | null
+          portfolio_url: string | null
+          profile_picture_url: string | null
+          roll_no: string | null
+          section: string | null
+          student_name: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          achievements?: string[] | null
+          admission_no?: string | null
+          bio?: string | null
+          class?: string | null
+          created_at?: string | null
+          github_url?: string | null
+          id?: string | null
+          portfolio_url?: string | null
+          profile_picture_url?: string | null
+          roll_no?: string | null
+          section?: string | null
+          student_name?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          achievements?: string[] | null
+          admission_no?: string | null
+          bio?: string | null
+          class?: string | null
+          created_at?: string | null
+          github_url?: string | null
+          id?: string | null
+          portfolio_url?: string | null
+          profile_picture_url?: string | null
+          roll_no?: string | null
+          section?: string | null
+          student_name?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      student_portfolios_public: {
+        Row: {
+          assignment_type: string | null
+          created_at: string | null
+          description: string | null
+          file_name: string | null
+          file_type: string | null
+          file_url: string | null
+          id: string | null
+          subject: string | null
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          assignment_type?: string | null
+          created_at?: string | null
+          description?: string | null
+          file_name?: string | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: string | null
+          subject?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          assignment_type?: string | null
+          created_at?: string | null
+          description?: string | null
+          file_name?: string | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: string | null
+          subject?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       student_public_profiles: {
         Row: {
           achievements: string[] | null
