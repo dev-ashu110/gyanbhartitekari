@@ -122,6 +122,13 @@ export type Database = {
             referencedRelation: "student_data"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "student_portfolios_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "student_public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       student_projects: {
@@ -172,6 +179,13 @@ export type Database = {
             referencedRelation: "student_data"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "student_projects_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "student_public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_roles: {
@@ -197,7 +211,45 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      student_public_profiles: {
+        Row: {
+          achievements: string[] | null
+          admission_no: string | null
+          bio: string | null
+          class: string | null
+          github_url: string | null
+          id: string | null
+          portfolio_url: string | null
+          profile_picture_url: string | null
+          section: string | null
+          student_name: string | null
+        }
+        Insert: {
+          achievements?: string[] | null
+          admission_no?: string | null
+          bio?: string | null
+          class?: string | null
+          github_url?: string | null
+          id?: string | null
+          portfolio_url?: string | null
+          profile_picture_url?: string | null
+          section?: string | null
+          student_name?: string | null
+        }
+        Update: {
+          achievements?: string[] | null
+          admission_no?: string | null
+          bio?: string | null
+          class?: string | null
+          github_url?: string | null
+          id?: string | null
+          portfolio_url?: string | null
+          profile_picture_url?: string | null
+          section?: string | null
+          student_name?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {

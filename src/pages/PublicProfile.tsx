@@ -60,9 +60,9 @@ export default function PublicProfile() {
     try {
       setLoading(true);
 
-      // Fetch student data
+      // Fetch student data from secure public view
       const { data: studentData, error: studentError } = await supabase
-        .from('student_data')
+        .from('student_public_profiles')
         .select('*')
         .eq('id', studentId)
         .single();
