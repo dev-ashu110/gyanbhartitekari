@@ -117,6 +117,14 @@ All colors MUST be HSL.
   .glass, .glass-strong, .glass-ultra {
     will-change: transform, opacity;
   }
+  
+  /* GPU acceleration for interactive elements */
+  [class*="motion-"], [class*="animate-"] {
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
 
 @layer utilities {
@@ -175,5 +183,37 @@ All colors MUST be HSL.
 
   .parallax-fast {
     transform: translateY(calc(var(--scroll) * 1.5px));
+  }
+  
+  /* Interactive hover effects with liquid motion */
+  .hover-liquid {
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  
+  .hover-liquid:hover {
+    transform: scale(1.05);
+  }
+  
+  /* Glass reflection effect */
+  .glass-reflection {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .glass-reflection::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+    pointer-events: none;
+    transition: transform 0.3s ease;
+    will-change: transform;
+  }
+  
+  .glass-reflection:hover::before {
+    transform: translate(var(--mouse-x, 0), var(--mouse-y, 0));
   }
 }

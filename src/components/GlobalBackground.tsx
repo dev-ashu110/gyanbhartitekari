@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, useMotionValue, useTransform, useSpring, useScroll } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 
@@ -47,6 +47,7 @@ export default function GlobalBackground() {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   const { scrollYProgress } = useScroll();
+  const [hoverPositions, setHoverPositions] = useState<Array<{ x: number; y: number; active: boolean }>>([]);
   
   // Get current path colors or default
   const currentBlobs = sectionColors[location.pathname] || sectionColors.default;
@@ -83,11 +84,27 @@ export default function GlobalBackground() {
     const handleMouseMove = (e: MouseEvent) => {
       mouseX.set(e.clientX);
       mouseY.set(e.clientY);
+      
+      // Create liquid ripple effect at cursor position
+      setHoverPositions(prev => [
+        ...prev.slice(-2), // Keep only last 2 positions for performance
+        { x: e.clientX, y: e.clientY, active: true }
+      ]);
     };
 
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [mouseX, mouseY]);
+  
+  // Fade out hover positions
+  useEffect(() => {
+    if (hoverPositions.length > 0) {
+      const timer = setTimeout(() => {
+        setHoverPositions(prev => prev.map(pos => ({ ...pos, active: false })));
+      }, 600);
+      return () => clearTimeout(timer);
+    }
+  }, [hoverPositions]);
 
   const transforms = [
     { ...blob1, scrollY: scrollY1 },
@@ -130,17 +147,57 @@ export default function GlobalBackground() {
         );
       })}
       
-      {/* Subtle glass reflections */}
+      {/* Interactive liquid hover effects */}
+      {hoverPositions.map((pos, idx) => (
+        <motion.div
+          key={`hover-${idx}`}
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            left: pos.x,
+            top: pos.y,
+            width: 200,
+            height: 200,
+            background: 'radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%)',
+            filter: 'blur(40px)',
+            transform: 'translate(-50%, -50%)',
+            willChange: 'opacity, transform',
+          }}
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{
+            scale: pos.active ? [0, 1.5, 1.2] : [1.2, 0],
+            opacity: pos.active ? [0, 0.4, 0.2] : [0.2, 0],
+          }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+        />
+      ))}
+      
+      {/* Multi-layered glass reflections */}
       <motion.div
-        className="absolute inset-0"
+        className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.05) 0%, transparent 50%)',
+          background: `radial-gradient(circle 800px at ${mouseX.get()}px ${mouseY.get()}px, rgba(255, 255, 255, 0.08) 0%, transparent 60%)`,
           mixBlendMode: 'overlay',
+          willChange: 'background',
         }}
-        animate={{
-          '--mouse-x': `${mouseX.get() / (typeof window !== 'undefined' ? window.innerWidth : 1920) * 100}%`,
-          '--mouse-y': `${mouseY.get() / (typeof window !== 'undefined' ? window.innerHeight : 1080) * 100}%`,
-        } as any}
+      />
+      
+      <motion.div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `radial-gradient(circle 400px at ${mouseX.get()}px ${mouseY.get()}px, rgba(59, 130, 246, 0.06) 0%, transparent 70%)`,
+          mixBlendMode: 'screen',
+          willChange: 'background',
+        }}
+      />
+      
+      {/* Subtle gradient shift on scroll */}
+      <motion.div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'linear-gradient(180deg, transparent 0%, rgba(139, 92, 246, 0.03) 50%, transparent 100%)',
+          opacity: scrollYProgress,
+          willChange: 'opacity',
+        }}
       />
     </div>
   );
