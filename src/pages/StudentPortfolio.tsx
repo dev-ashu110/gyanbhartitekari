@@ -33,13 +33,18 @@ interface StudentData {
   roll_no: string;
   section: string;
   class: string;
-  parent_email?: string;
-  parent_phone?: string;
   github_url?: string;
   portfolio_url?: string;
   bio?: string;
   profile_picture_url?: string;
   achievements?: string[];
+}
+
+interface ParentContact {
+  id: string;
+  student_id: string;
+  parent_email?: string;
+  parent_phone?: string;
 }
 
 interface Portfolio {
@@ -68,6 +73,7 @@ interface Project {
 const StudentPortfolio = () => {
   const [user, setUser] = useState<User | null>(null);
   const [studentData, setStudentData] = useState<StudentData | null>(null);
+  const [parentContact, setParentContact] = useState<ParentContact | null>(null);
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -138,19 +144,46 @@ const StudentPortfolio = () => {
       console.error('Error fetching student data:', error);
     } else if (data) {
       setStudentData(data);
+      
+      // Fetch parent contacts separately
+      await fetchParentContact(data.id);
+      
       setStudentForm({
         student_name: data.student_name || '',
         admission_no: data.admission_no || '',
         roll_no: data.roll_no || '',
         section: data.section || '',
         class: data.class || '',
-        parent_email: data.parent_email || '',
-        parent_phone: data.parent_phone || '',
+        parent_email: '',
+        parent_phone: '',
         github_url: data.github_url || '',
         portfolio_url: data.portfolio_url || '',
         bio: data.bio || '',
         achievements: data.achievements?.join(', ') || '',
       });
+    }
+  };
+
+  const fetchParentContact = async (studentId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('parent_contacts' as any)
+        .select('*')
+        .eq('student_id', studentId)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching parent contact:', error);
+      } else if (data) {
+        setParentContact(data as any);
+        setStudentForm(prev => ({
+          ...prev,
+          parent_email: (data as any).parent_email || '',
+          parent_phone: (data as any).parent_phone || '',
+        }));
+      }
+    } catch (error) {
+      console.error('Error in fetchParentContact:', error);
     }
   };
 
@@ -192,6 +225,7 @@ const StudentPortfolio = () => {
         .map(a => a.trim())
         .filter(a => a.length > 0);
 
+      // Save student data (without parent contact info)
       const dataToSave = {
         user_id: user.id,
         student_name: studentForm.student_name,
@@ -199,13 +233,13 @@ const StudentPortfolio = () => {
         roll_no: studentForm.roll_no,
         section: studentForm.section,
         class: studentForm.class,
-        parent_email: studentForm.parent_email || null,
-        parent_phone: studentForm.parent_phone || null,
         github_url: studentForm.github_url || null,
         portfolio_url: studentForm.portfolio_url || null,
         bio: studentForm.bio || null,
         achievements: achievementsArray.length > 0 ? achievementsArray : null,
       };
+
+      let savedStudentId = studentData?.id;
 
       if (studentData) {
         const { error } = await supabase
@@ -215,11 +249,40 @@ const StudentPortfolio = () => {
 
         if (error) throw error;
       } else {
-        const { error } = await supabase
+        const { data: newStudent, error } = await supabase
           .from('student_data')
-          .insert([dataToSave]);
+          .insert([dataToSave])
+          .select()
+          .single();
 
         if (error) throw error;
+        savedStudentId = newStudent.id;
+      }
+
+      // Save parent contacts separately to the secure table
+      if (savedStudentId && (studentForm.parent_email || studentForm.parent_phone)) {
+        const parentData = {
+          student_id: savedStudentId,
+          parent_email: studentForm.parent_email || null,
+          parent_phone: studentForm.parent_phone || null,
+        };
+
+        if (parentContact) {
+          // Update existing parent contact
+          const { error } = await (supabase as any)
+            .from('parent_contacts')
+            .update(parentData)
+            .eq('id', parentContact.id);
+
+          if (error) throw error;
+        } else {
+          // Insert new parent contact
+          const { error } = await (supabase as any)
+            .from('parent_contacts')
+            .insert([parentData]);
+
+          if (error) throw error;
+        }
       }
 
       toast({
