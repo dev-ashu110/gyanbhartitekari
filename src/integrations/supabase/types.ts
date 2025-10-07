@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      pending_role_requests: {
+        Row: {
+          id: string
+          notes: string | null
+          requested_at: string
+          requested_role: Database["public"]["Enums"]["app_role"]
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          notes?: string | null
+          requested_at?: string
+          requested_role: Database["public"]["Enums"]["app_role"]
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          notes?: string | null
+          requested_at?: string
+          requested_role?: Database["public"]["Enums"]["app_role"]
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      school_info: {
+        Row: {
+          address: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          description: string | null
+          established_year: number | null
+          id: string
+          principal_name: string | null
+          school_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          description?: string | null
+          established_year?: number | null
+          id?: string
+          principal_name?: string | null
+          school_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          description?: string | null
+          established_year?: number | null
+          id?: string
+          principal_name?: string | null
+          school_name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       student_data: {
         Row: {
           achievements: string[] | null
@@ -202,6 +271,42 @@ export type Database = {
           },
         ]
       }
+      teachers: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          experience_years: number | null
+          id: string
+          name: string
+          photo_url: string | null
+          qualification: string | null
+          subject: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          experience_years?: number | null
+          id?: string
+          name: string
+          photo_url?: string | null
+          qualification?: string | null
+          subject: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          experience_years?: number | null
+          id?: string
+          name?: string
+          photo_url?: string | null
+          qualification?: string | null
+          subject?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -365,7 +470,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "teacher" | "student"
+      app_role: "admin" | "teacher" | "student" | "visitor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -493,7 +598,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "teacher", "student"],
+      app_role: ["admin", "teacher", "student", "visitor"],
     },
   },
 } as const

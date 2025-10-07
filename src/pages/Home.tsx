@@ -71,9 +71,9 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6, duration: 0.8 }}
             >
-              <Link to="/admissions">
+              <Link to="/auth">
                 <Button size="lg" className="btn-primary">
-                  Admissions Open
+                  Get Started - Sign In
                 </Button>
               </Link>
               <Link to="/contact">
