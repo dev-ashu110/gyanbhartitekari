@@ -66,21 +66,31 @@ export default function Home() {
             </motion.p>
 
             <motion.div
-              className="flex flex-wrap gap-4 justify-center"
+              className="flex flex-col items-center gap-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6, duration: 0.8 }}
             >
-              <Link to="/auth">
-                <Button size="lg" className="btn-primary">
-                  Get Started - Sign In
+              <Link to="/admissions" className="w-full max-w-md">
+                <Button size="lg" className="btn-primary w-full text-lg">
+                  Admissions Open - Apply Now
                 </Button>
               </Link>
-              <Link to="/contact">
-                <Button size="lg" variant="outline" className="glass-effect">
-                  Contact Us
+              
+              <Link to="/auth" className="w-full max-w-md">
+                <Button size="lg" variant="outline" className="glass-effect w-full">
+                  Login / Sign Up
                 </Button>
               </Link>
+
+              <motion.p
+                className="text-sm text-muted-foreground mt-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1, duration: 0.8 }}
+              >
+                Made with ❤️ By Aashutosh Ranjan
+              </motion.p>
             </motion.div>
           </motion.div>
         </div>

@@ -25,11 +25,11 @@ export const RoleSelectionDialog = ({ open, onOpenChange, userId }: RoleSelectio
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleRoleSelection = async (role: 'visitor' | 'student' | 'teacher') => {
+  const handleRoleSelection = async (role: 'visitor' | 'student' | 'teacher' | 'admin') => {
     setLoading(true);
     try {
       if (role === 'visitor') {
-        // Visitors get immediate access - assign role directly
+        // Visitors get immediate access
         const { error: roleError } = await supabase
           .from('user_roles')
           .insert({ user_id: userId, role: 'visitor' });
@@ -41,11 +41,11 @@ export const RoleSelectionDialog = ({ open, onOpenChange, userId }: RoleSelectio
           description: 'You have been granted visitor access.',
         });
         onOpenChange(false);
-        navigate('/visitor-portal');
+        navigate('/visitor');
       } else {
-        // Students and teachers need approval
-        const { error } = await supabase
-          .from('pending_role_requests')
+        // Students, teachers, and admins need approval
+        const { error } = await (supabase as any)
+          .from('approvals')
           .insert({
             user_id: userId,
             requested_role: role,
@@ -53,30 +53,36 @@ export const RoleSelectionDialog = ({ open, onOpenChange, userId }: RoleSelectio
           });
 
         if (error) {
-          // Check if request already exists
           if (error.code === '23505') {
             toast({
               title: 'Request Already Exists',
-              description: `You already have a pending ${role} request. Please wait for admin approval.`,
+              description: `You already have a pending ${role} request.`,
               variant: 'destructive',
             });
           } else {
             throw error;
           }
         } else {
+          // Send email notification via edge function
+          await supabase.functions.invoke('send-approval-email', {
+            body: {
+              userId,
+              requestedRole: role,
+            },
+          });
+
           toast({
             title: 'Request Submitted',
-            description: `Your ${role} access request has been submitted. An administrator will review it shortly.`,
+            description: `Your ${role} access request has been submitted for approval.`,
           });
           
-          // Assign visitor role temporarily so they can browse
+          // Assign visitor role temporarily
           await supabase
             .from('user_roles')
-            .insert({ user_id: userId, role: 'visitor' })
-            .then(() => {
-              onOpenChange(false);
-              navigate('/visitor-portal');
-            });
+            .insert({ user_id: userId, role: 'visitor' });
+          
+          onOpenChange(false);
+          navigate('/visitor');
         }
       }
     } catch (error: any) {
@@ -102,7 +108,7 @@ export const RoleSelectionDialog = ({ open, onOpenChange, userId }: RoleSelectio
     {
       id: 'student',
       title: 'Student',
-      description: 'Access your portfolio, projects, and academic records',
+      description: 'Access portfolio, submit projects and assignments',
       icon: GraduationCap,
       color: 'from-purple-500 to-pink-500',
       approvalNeeded: true,
@@ -110,9 +116,17 @@ export const RoleSelectionDialog = ({ open, onOpenChange, userId }: RoleSelectio
     {
       id: 'teacher',
       title: 'Teacher',
-      description: 'Manage student data and review portfolios',
+      description: 'Review student submissions and provide feedback',
       icon: BookOpen,
       color: 'from-orange-500 to-red-500',
+      approvalNeeded: true,
+    },
+    {
+      id: 'admin',
+      title: 'Admin',
+      description: 'Manage school content, approvals, and system settings',
+      icon: Shield,
+      color: 'from-red-500 to-pink-500',
       approvalNeeded: true,
     },
   ];
@@ -174,24 +188,11 @@ export const RoleSelectionDialog = ({ open, onOpenChange, userId }: RoleSelectio
           })}
         </div>
 
-        {/* Admin Section */}
+        {/* Owner Note */}
         <div className="mt-4 pt-6 border-t border-border/50">
-          <Card className="glass-strong p-4 bg-gradient-to-r from-primary/5 to-accent/5">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-gradient-to-br from-primary to-accent">
-                <Shield className="h-6 w-6 text-white" />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-semibold">Administrator Access</h4>
-                <p className="text-sm text-muted-foreground">
-                  Requires special permission from the system owner
-                </p>
-              </div>
-              <Button variant="secondary" disabled>
-                Contact Owner
-              </Button>
-            </div>
-          </Card>
+          <p className="text-center text-sm text-muted-foreground">
+            System owner access is restricted to <span className="font-semibold">ashu1592125@gmail.com</span>
+          </p>
         </div>
       </DialogContent>
     </Dialog>

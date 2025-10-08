@@ -1,17 +1,20 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from './ThemeToggle';
 import { LiquidToggle } from './LiquidToggle';
 import { BlurIntensityToggle } from './BlurIntensityToggle';
 import schoolLogo from '@/assets/school-logo.png';
+import { supabase } from '@/integrations/supabase/client';
 
 export const NavLiquid = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [liquidEffect, setLiquidEffect] = useState(true);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -22,17 +25,67 @@ export const NavLiquid = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    checkUserRole();
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      checkUserRole();
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const checkUserRole = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (user) {
+      setIsAuthenticated(true);
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (roleData) {
+        setUserRole(roleData.role);
+      }
+    } else {
+      setIsAuthenticated(false);
+      setUserRole(null);
+    }
+  };
+
   const navLinks = [
     { name: 'Home', path: '/' },
-    { name: 'About Us', path: '/about' },
+    { name: 'About', path: '/about' },
     { name: 'Admissions', path: '/admissions' },
     { name: 'Academics', path: '/academics' },
-    { name: 'Notices', path: '/notices' },
     { name: 'Events', path: '/events' },
     { name: 'Gallery', path: '/gallery' },
     { name: 'Contact', path: '/contact' },
-    { name: 'Student Portfolio', path: '/student-portfolio' },
   ];
+
+  const getDashboardLink = () => {
+    if (!isAuthenticated) return null;
+    
+    switch (userRole) {
+      case 'student':
+        return { name: 'My Dashboard', path: '/student', icon: User };
+      case 'teacher':
+        return { name: 'Teacher Dashboard', path: '/teacher', icon: User };
+      case 'admin':
+        return { name: 'Admin Panel', path: '/admin-dashboard', icon: User };
+      case 'owner':
+        return { name: 'Owner Dashboard', path: '/owner', icon: User };
+      case 'visitor':
+        return { name: 'Visitor Portal', path: '/visitor', icon: User };
+      default:
+        return null;
+    }
+  };
+
+  const dashboardLink = getDashboardLink();
+  const allLinks = dashboardLink ? [...navLinks, dashboardLink] : navLinks;
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -83,17 +136,18 @@ export const NavLiquid = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center space-x-1">
-              {navLinks.map((link) => (
+              {allLinks.map((link) => (
                 <Link key={link.path} to={link.path}>
                   <motion.div
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className={`px-4 py-2 rounded-full transition-all duration-300 ${
+                    className={`px-4 py-2 rounded-full transition-all duration-300 flex items-center gap-2 ${
                       isActive(link.path)
                         ? 'bg-primary text-primary-foreground font-medium'
                         : 'text-foreground hover:bg-secondary'
                     }`}
                   >
+                    {'icon' in link && link.icon && <User className="h-4 w-4" />}
                     {link.name}
                   </motion.div>
                 </Link>
@@ -130,7 +184,7 @@ export const NavLiquid = () => {
               className="lg:hidden mt-2 glass-strong rounded-3xl overflow-hidden"
             >
               <div className="p-4 flex flex-col space-y-2">
-                {navLinks.map((link, index) => (
+                {allLinks.map((link, index) => (
                   <Link
                     key={link.path}
                     to={link.path}
@@ -140,12 +194,13 @@ export const NavLiquid = () => {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      className={`px-4 py-3 rounded-2xl transition-all duration-300 ${
+                      className={`px-4 py-3 rounded-2xl transition-all duration-300 flex items-center gap-2 ${
                         isActive(link.path)
                           ? 'bg-primary text-primary-foreground font-medium'
                           : 'text-foreground hover:bg-secondary'
                       }`}
                     >
+                      {'icon' in link && link.icon && <User className="h-4 w-4" />}
                       {link.name}
                     </motion.div>
                   </Link>
