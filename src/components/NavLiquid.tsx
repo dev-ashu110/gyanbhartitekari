@@ -1,21 +1,25 @@
 import { useState, useEffect } from 'react';
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, User } from 'lucide-react';
+import { Menu, X, User, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from './ThemeToggle';
 import { LiquidToggle } from './LiquidToggle';
 import { BlurIntensityToggle } from './BlurIntensityToggle';
 import schoolLogo from '@/assets/school-logo.png';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 export const NavLiquid = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [liquidEffect, setLiquidEffect] = useState(true);
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const location = useLocation();
+  const { user, profile, signOut, loading } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,33 +29,21 @@ export const NavLiquid = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    checkUserRole();
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      checkUserRole();
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const checkUserRole = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (user) {
-      setIsAuthenticated(true);
-      const { data: roleData } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .single();
-      
-      if (roleData) {
-        setUserRole(roleData.role);
-      }
-    } else {
-      setIsAuthenticated(false);
-      setUserRole(null);
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: 'Signed out successfully',
+        description: 'You have been logged out.',
+      });
+      navigate('/');
+      setIsMobileMenuOpen(false);
+    } catch (error) {
+      toast({
+        title: 'Error signing out',
+        description: 'Please try again.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -65,20 +57,20 @@ export const NavLiquid = () => {
     { name: 'Contact', path: '/contact' },
   ];
 
-  const getDashboardLink = () => {
-    if (!isAuthenticated) return null;
+  type IconType = typeof User;
+
+  const getDashboardLink = (): { name: string; path: string; icon: IconType } | null => {
+    if (!user || !profile) return null;
     
-    switch (userRole) {
+    switch (profile.role) {
       case 'student':
-        return { name: 'My Dashboard', path: '/student', icon: User };
+        return { name: 'My Portfolio', path: '/student-portfolio', icon: User };
       case 'teacher':
-        return { name: 'Teacher Dashboard', path: '/teacher', icon: User };
+        return { name: 'Teacher Dashboard', path: '/teacher-dashboard', icon: User };
       case 'admin':
         return { name: 'Admin Panel', path: '/admin-dashboard', icon: User };
-      case 'owner':
-        return { name: 'Owner Dashboard', path: '/owner', icon: User };
       case 'visitor':
-        return { name: 'Visitor Portal', path: '/visitor', icon: User };
+        return { name: 'Visitor Portal', path: '/visitor-portal', icon: User };
       default:
         return null;
     }
@@ -136,9 +128,12 @@ export const NavLiquid = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center space-x-1">
-              {allLinks.map((link) => (
+              {allLinks.map((link, index) => (
                 <Link key={link.path} to={link.path}>
                   <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className={`px-4 py-2 rounded-full transition-all duration-300 flex items-center gap-2 ${
@@ -147,11 +142,42 @@ export const NavLiquid = () => {
                         : 'text-foreground hover:bg-secondary'
                     }`}
                   >
-                    {'icon' in link && link.icon && <User className="h-4 w-4" />}
+                    {'icon' in link && link.icon && React.createElement(link.icon as React.ComponentType<{ className?: string }>, { className: "h-4 w-4" })}
                     {link.name}
                   </motion.div>
                 </Link>
               ))}
+              
+              {user && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: allLinks.length * 0.05 }}
+                >
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleSignOut}
+                    className="flex items-center gap-2 rounded-full hover-scale ml-2"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span className="hidden xl:inline">Logout</span>
+                  </Button>
+                </motion.div>
+              )}
+
+              {!user && !loading && (
+                <Link to="/auth">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                  >
+                    <Button size="sm" className="rounded-full hover-scale ml-2">
+                      Sign In
+                    </Button>
+                  </motion.div>
+                </Link>
+              )}
             </div>
 
             {/* Controls */}
@@ -200,11 +226,45 @@ export const NavLiquid = () => {
                           : 'text-foreground hover:bg-secondary'
                       }`}
                     >
-                      {'icon' in link && link.icon && <User className="h-4 w-4" />}
+                      {'icon' in link && link.icon && React.createElement(link.icon as React.ComponentType<{ className?: string }>, { className: "h-4 w-4" })}
                       {link.name}
                     </motion.div>
                   </Link>
                 ))}
+
+                {user && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: allLinks.length * 0.05 }}
+                    className="pt-2 border-t border-border/50"
+                  >
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleSignOut}
+                      className="w-full flex items-center justify-center gap-2 rounded-2xl"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Logout
+                    </Button>
+                  </motion.div>
+                )}
+
+                {!user && !loading && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: allLinks.length * 0.05 }}
+                    className="pt-2 border-t border-border/50"
+                  >
+                    <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button size="sm" className="w-full rounded-2xl">
+                        Sign In
+                      </Button>
+                    </Link>
+                  </motion.div>
+                )}
               </div>
             </motion.div>
           )}

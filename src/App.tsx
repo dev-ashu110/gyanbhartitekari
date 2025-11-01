@@ -3,6 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "next-themes";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { NavLiquid } from "@/components/NavLiquid";
 import { Footer } from "@/components/Footer";
 import { ParallaxLayers } from "@/components/ParallaxLayers";
@@ -31,43 +33,48 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <div className="min-h-screen flex flex-col w-full relative">
-          <GlobalBackground />
-          <MouseFollower />
-          <ParallaxLayers />
-          <NavLiquid />
-          <div className="relative z-10">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/admissions" element={<Admissions />} />
-              <Route path="/academics" element={<Academics />} />
-              <Route path="/notices" element={<Notices />} />
-              <Route path="/events" element={<Events />} />
-              <Route path="/gallery" element={<Gallery />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/student-portfolio" element={<StudentPortfolio />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/admin-dashboard" element={<AdminDashboard />} />
-              <Route path="/profile/:studentId" element={<PublicProfile />} />
-              <Route path="/visitor-portal" element={<VisitorPortal />} />
-              <Route path="/visitor" element={<VisitorPortal />} />
-              <Route path="/student" element={<StudentDashboard />} />
-              <Route path="/teacher" element={<TeacherDashboard />} />
-              <Route path="/owner" element={<OwnerDashboard />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </div>
-          <Footer />
-        </div>
-      </BrowserRouter>
-    </TooltipProvider>
+    <ThemeProvider attribute="class" defaultTheme="dark">
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <div className="min-h-screen flex flex-col w-full relative">
+              <GlobalBackground />
+              <MouseFollower />
+              <ParallaxLayers />
+              <NavLiquid />
+              <div className="relative z-10">
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/admissions" element={<Admissions />} />
+                  <Route path="/academics" element={<Academics />} />
+                  <Route path="/notices" element={<Notices />} />
+                  <Route path="/events" element={<Events />} />
+                  <Route path="/gallery" element={<Gallery />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/admin" element={<Admin />} />
+                  <Route path="/student-portfolio" element={<StudentPortfolio />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/admin-dashboard" element={<AdminDashboard />} />
+                  <Route path="/profile/:studentId" element={<PublicProfile />} />
+                  <Route path="/visitor-portal" element={<VisitorPortal />} />
+                  <Route path="/visitor" element={<VisitorPortal />} />
+                  <Route path="/student" element={<StudentDashboard />} />
+                  <Route path="/teacher" element={<TeacherDashboard />} />
+                  <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
+                  <Route path="/owner" element={<OwnerDashboard />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+                <Footer />
+              </div>
+            </div>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
