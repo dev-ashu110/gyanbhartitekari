@@ -15,23 +15,31 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [showRoleDialog, setShowRoleDialog] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user is already logged in and has a role
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session) {
-        await checkUserRole(session.user.id);
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        setCurrentUserId(session.user.id);
+        // Defer any Supabase calls to avoid deadlocks
+        setTimeout(() => {
+          checkUserRole(session.user.id);
+        }, 0);
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session) {
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
         setCurrentUserId(session.user.id);
-        await checkUserRole(session.user.id);
+        setTimeout(() => {
+          checkUserRole(session.user.id);
+        }, 0);
       }
     });
 
@@ -87,11 +95,13 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      const redirectUrl = `${window.location.origin}/`;
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/student-portfolio`,
+          emailRedirectTo: redirectUrl,
+          data: { full_name: fullName },
         },
       });
 
@@ -99,12 +109,13 @@ const Auth = () => {
 
       toast({
         title: 'Success!',
-        description: 'Your account has been created. You can now log in.',
+        description: 'Account created. Check your email to confirm your address.',
       });
     } catch (error: any) {
+      console.error('Sign up error:', error);
       toast({
         title: 'Error',
-        description: error.message,
+        description: error?.message || 'Unable to sign up. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -212,6 +223,18 @@ const Auth = () => {
 
                   <TabsContent value="signup">
                     <form onSubmit={handleSignUp} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-name">Full name</Label>
+                        <Input
+                          id="signup-name"
+                          type="text"
+                          placeholder="Your full name"
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                          required
+                          className="glass-effect"
+                        />
+                      </div>
                       <div className="space-y-2">
                         <Label htmlFor="signup-email">Email</Label>
                         <Input
