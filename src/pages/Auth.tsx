@@ -46,21 +46,41 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  const fetchProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, role')
+        .eq('id', userId)
+        .limit(1);
+      if (error) throw error;
+      return data?.[0] ?? null;
+    } catch (err) {
+      console.error('Error fetching profile:', err);
+      return null;
+    }
+  };
+
   const checkUserRole = async (userId: string) => {
     try {
+      // Ensure profile exists (created by trigger); ignore failures
+      await fetchProfile(userId);
+
       const { data: roles, error } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .limit(1);
 
-      if (error) throw error;
+      // If PostgREST returns 406 (no rows to coerce), treat as no role assigned
+      if (error && (error as any)?.code !== 'PGRST116') {
+        throw error;
+      }
 
       if (roles && roles.length > 0) {
-        // User has a role, redirect based on role
         const userRole = roles[0].role;
         redirectByRole(userRole);
       } else {
-        // No role assigned, show role selection dialog
         setCurrentUserId(userId);
         setShowRoleDialog(true);
       }
@@ -113,11 +133,19 @@ const Auth = () => {
       });
     } catch (error: any) {
       console.error('Sign up error:', error);
-      toast({
-        title: 'Error',
-        description: error?.message || 'Unable to sign up. Please try again.',
-        variant: 'destructive',
-      });
+      const msg = String(error?.message || '').toLowerCase();
+      if (msg.includes('already') && msg.includes('user')) {
+        toast({
+          title: 'Account exists',
+          description: 'An account with this email already exists. Please sign in.',
+        });
+      } else {
+        toast({
+          title: 'Sign up failed',
+          description: error?.message || 'Unable to sign up. Please try again.',
+          variant: 'destructive',
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -140,9 +168,12 @@ const Auth = () => {
         description: 'You have successfully logged in.',
       });
     } catch (error: any) {
+      const msg = String(error?.message || '').toLowerCase();
       toast({
-        title: 'Error',
-        description: error.message,
+        title: 'Sign in failed',
+        description: msg.includes('invalid login credentials')
+          ? 'Invalid email or password.'
+          : (error?.message || 'Unable to sign in. Please try again.'),
         variant: 'destructive',
       });
     } finally {
