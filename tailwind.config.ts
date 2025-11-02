@@ -15,6 +15,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        heading: ['Poppins', 'Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -77,10 +78,32 @@ export default {
             height: "0",
           },
         },
+        "typewriter": {
+          "0%": { width: "0ch" },
+          "50%": { width: "100%" },
+          "100%": { width: "100%" }
+        },
+        "blink": {
+          "0%, 50%": { opacity: "1" },
+          "51%, 100%": { opacity: "0" }
+        },
+        "touch-feedback": {
+          "0%": { transform: "scale(1)" },
+          "50%": { transform: "scale(0.97)" },
+          "100%": { transform: "scale(1)" }
+        },
+        "gradient-shift": {
+          "0%, 100%": { "background-position": "0% 50%" },
+          "50%": { "background-position": "100% 50%" }
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "typewriter": "typewriter 3s steps(20) infinite",
+        "blink": "blink 1s infinite",
+        "touch-feedback": "touch-feedback 0.15s ease-out",
+        "gradient-shift": "gradient-shift 3s ease-in-out infinite",
       },
     },
   },

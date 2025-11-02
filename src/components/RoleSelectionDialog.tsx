@@ -32,7 +32,7 @@ export const RoleSelectionDialog = ({ open, onOpenChange, userId }: RoleSelectio
         // Visitors get immediate access
         const { error: roleError } = await supabase
           .from('user_roles')
-          .insert({ user_id: userId, role: 'visitor' });
+          .upsert([{ user_id: userId, role: 'visitor' }], { onConflict: 'user_id,role', ignoreDuplicates: true });
 
         if (roleError) throw roleError;
 
@@ -46,11 +46,11 @@ export const RoleSelectionDialog = ({ open, onOpenChange, userId }: RoleSelectio
         // Students, teachers, and admins need approval
         const { error } = await supabase
           .from('pending_role_requests')
-          .insert({
+          .insert([{
             user_id: userId,
             requested_role: role,
             status: 'pending',
-          });
+          }]);
 
         if (error) {
           if (error.code === '23505') {
@@ -71,16 +71,17 @@ export const RoleSelectionDialog = ({ open, onOpenChange, userId }: RoleSelectio
           // Assign visitor role temporarily
           await supabase
             .from('user_roles')
-            .insert({ user_id: userId, role: 'visitor' });
+            .upsert([{ user_id: userId, role: 'visitor' }], { onConflict: 'user_id,role', ignoreDuplicates: true });
           
           onOpenChange(false);
           navigate('/visitor-portal');
         }
       }
     } catch (error: any) {
+      console.error('Role selection error:', error);
       toast({
         title: 'Error',
-        description: error.message,
+        description: error.message || 'Failed to process role selection. Please try again.',
         variant: 'destructive',
       });
     } finally {

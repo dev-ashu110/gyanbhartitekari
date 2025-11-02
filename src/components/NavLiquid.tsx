@@ -210,7 +210,7 @@ export const NavLiquid = () => {
               className="lg:hidden mt-2 glass-strong rounded-3xl overflow-hidden"
             >
               <div className="p-4 flex flex-col space-y-2">
-                {allLinks.map((link, index) => (
+                {navLinks.map((link, index) => (
                   <Link
                     key={link.path}
                     to={link.path}
@@ -226,8 +226,20 @@ export const NavLiquid = () => {
                           : 'text-foreground hover:bg-secondary'
                       }`}
                     >
-                      {'icon' in link && link.icon && React.createElement(link.icon as React.ComponentType<{ className?: string }>, { className: "h-4 w-4" })}
                       {link.name}
+                    </motion.div>
+                  </Link>
+                ))}
+
+                {user && profile?.role === 'admin' && (
+                  <Link to="/admin-dashboard" onClick={() => setIsMobileMenuOpen(false)}>
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: navLinks.length * 0.05 }}
+                      className="px-4 py-3 rounded-2xl transition-all duration-300 flex items-center gap-2 text-primary font-medium"
+                    >
+                      Admin Dashboard
                     </motion.div>
                   </Link>
                 ))}

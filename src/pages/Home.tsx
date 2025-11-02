@@ -4,9 +4,20 @@ import { GraduationCap, BookOpen, Users, Award, ChevronRight } from 'lucide-reac
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { CardGlass } from '@/components/CardGlass';
+import { TypewriterText } from '@/components/TypewriterText';
+import { TouchFeedback } from '@/components/TouchFeedback';
+import { useAuth } from '@/contexts/AuthContext';
 import PageWrapper from '@/components/PageWrapper';
 
 export default function Home() {
+  const { user } = useAuth();
+
+  const typewriterTexts = [
+    "Empowering Minds, Inspiring Futures",
+    "A Seat of Learning Excellence", 
+    "Building Tomorrow's Leaders",
+    "Where Dreams Take Flight"
+  ];
 
   const quickLinks = [
     { icon: BookOpen, title: 'Admissions', path: '/admissions', description: 'Join our school family' },
@@ -36,7 +47,7 @@ export default function Home() {
             className="text-center max-w-4xl mx-auto"
           >
             <motion.h1
-              className="text-5xl md:text-7xl font-bold mb-6"
+              className="text-5xl md:text-7xl font-heading font-bold mb-6"
               animate={{
                 backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
               }}
@@ -56,14 +67,19 @@ export default function Home() {
               Welcome to Gyan Bharti
             </motion.h1>
             
-            <motion.p
-              className="text-xl md:text-2xl text-muted-foreground mb-8"
+            <motion.div
+              className="text-xl md:text-2xl text-muted-foreground mb-8 h-16 flex items-center justify-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.8 }}
             >
-              A Seat of Learning - Empowering Minds, Building Futures
-            </motion.p>
+              <TypewriterText 
+                texts={typewriterTexts}
+                className="font-heading font-medium"
+                delay={2500}
+                speed={80}
+              />
+            </motion.div>
 
             <motion.div
               className="flex flex-col items-center gap-4"
@@ -71,17 +87,26 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6, duration: 0.8 }}
             >
-              <Link to="/admissions" className="w-full max-w-md">
-                <Button size="lg" className="btn-primary w-full text-lg">
-                  Admissions Open - Apply Now
-                </Button>
-              </Link>
+              <TouchFeedback className="w-full max-w-md">
+                <Link to="/admissions" className="block w-full">
+                  <Button 
+                    size="lg" 
+                    className="btn-primary w-full text-lg animate-gradient-shift bg-gradient-to-r from-primary via-accent to-primary bg-[length:300%_100%] hover:shadow-lg hover:shadow-primary/25 transition-all duration-300"
+                  >
+                    {user ? 'Admission Open - Apply Now' : 'Join Our School Family'}
+                  </Button>
+                </Link>
+              </TouchFeedback>
               
-              <Link to="/auth" className="w-full max-w-md">
-                <Button size="lg" variant="outline" className="glass-effect w-full">
-                  Login / Sign Up
-                </Button>
-              </Link>
+              {!user && (
+                <TouchFeedback className="w-full max-w-md">
+                  <Link to="/auth" className="block w-full">
+                    <Button size="lg" variant="outline" className="glass-effect w-full hover:bg-primary/10 transition-all duration-300">
+                      Login / Sign Up
+                    </Button>
+                  </Link>
+                </TouchFeedback>
+              )}
 
               <motion.p
                 className="text-sm text-muted-foreground mt-4"
