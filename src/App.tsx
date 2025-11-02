@@ -26,7 +26,7 @@ import PublicProfile from "./pages/PublicProfile";
 import VisitorPortal from "./pages/VisitorPortal";
 import StudentDashboard from "./pages/StudentDashboard";
 import TeacherDashboard from "./pages/TeacherDashboard";
-import OwnerDashboard from "./pages/OwnerDashboard";
+
 import { MouseFollower } from "./components/MouseFollower";
 
 const queryClient = new QueryClient();
@@ -64,7 +64,7 @@ const App = () => (
                   <Route path="/student" element={<StudentDashboard />} />
                   <Route path="/teacher" element={<TeacherDashboard />} />
                   <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
-                  <Route path="/owner" element={<OwnerDashboard />} />
+                  
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

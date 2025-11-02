@@ -53,7 +53,7 @@ export function RoleBasedNav() {
     ? [
         { label: 'Home', icon: Home, path: '/' },
         { label: 'Dashboard', icon: LayoutDashboard, path: '/admin-dashboard' },
-        { label: 'Users', icon: Users, path: '/owner-dashboard' },
+        { label: 'Users', icon: Users, path: '/admin-dashboard' },
       ]
     : [
         { label: 'Home', icon: Home, path: '/' },

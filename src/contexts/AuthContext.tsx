@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 interface Profile {
   id: string;
   full_name: string | null;
-  role: string;
+  role: string | null;
   created_at: string;
 }
 
@@ -28,20 +28,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase
+      // Fetch profile data
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('id, full_name, created_at')
         .eq('id', userId)
-        .limit(1);
+        .single();
 
-      if (error) {
-        console.error('Error fetching profile:', error);
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
         return null;
       }
 
-      // Default role to 'user' if not present
-      const profileData = data?.[0];
-      return profileData ? { ...profileData, role: 'user' } : null;
+      // Fetch user role from user_roles table
+      const { data: roleData, error: roleError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .limit(1)
+        .single();
+
+      // Combine profile and role
+      return {
+        ...profileData,
+        role: roleData?.role || null
+      };
     } catch (err) {
       console.error('Error in fetchProfile:', err);
       return null;

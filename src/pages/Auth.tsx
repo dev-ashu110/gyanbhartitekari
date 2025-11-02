@@ -50,11 +50,11 @@ const Auth = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, full_name, role')
+        .select('id, full_name')
         .eq('id', userId)
-        .limit(1);
+        .single();
       if (error) throw error;
-      return data?.[0] ?? null;
+      return data;
     } catch (err) {
       console.error('Error fetching profile:', err);
       return null;

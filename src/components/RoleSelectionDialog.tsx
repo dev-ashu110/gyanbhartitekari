@@ -41,11 +41,11 @@ export const RoleSelectionDialog = ({ open, onOpenChange, userId }: RoleSelectio
           description: 'You have been granted visitor access.',
         });
         onOpenChange(false);
-        navigate('/visitor');
+        navigate('/visitor-portal');
       } else {
         // Students, teachers, and admins need approval
-        const { error } = await (supabase as any)
-          .from('approvals')
+        const { error } = await supabase
+          .from('pending_role_requests')
           .insert({
             user_id: userId,
             requested_role: role,
@@ -63,17 +63,9 @@ export const RoleSelectionDialog = ({ open, onOpenChange, userId }: RoleSelectio
             throw error;
           }
         } else {
-          // Send email notification via edge function
-          await supabase.functions.invoke('send-approval-email', {
-            body: {
-              userId,
-              requestedRole: role,
-            },
-          });
-
           toast({
             title: 'Request Submitted',
-            description: `Your ${role} access request has been submitted for approval.`,
+            description: `Your ${role} access request has been submitted. An admin will review it soon.`,
           });
           
           // Assign visitor role temporarily
@@ -82,7 +74,7 @@ export const RoleSelectionDialog = ({ open, onOpenChange, userId }: RoleSelectio
             .insert({ user_id: userId, role: 'visitor' });
           
           onOpenChange(false);
-          navigate('/visitor');
+          navigate('/visitor-portal');
         }
       }
     } catch (error: any) {
@@ -188,10 +180,10 @@ export const RoleSelectionDialog = ({ open, onOpenChange, userId }: RoleSelectio
           })}
         </div>
 
-        {/* Owner Note */}
+        {/* Admin Note */}
         <div className="mt-4 pt-6 border-t border-border/50">
           <p className="text-center text-sm text-muted-foreground">
-            System owner access is restricted to <span className="font-semibold">ashu1592125@gmail.com</span>
+            Admin requests require approval. Contact your system administrator for assistance.
           </p>
         </div>
       </DialogContent>

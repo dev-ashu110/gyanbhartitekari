@@ -14,7 +14,10 @@ import {
   TrendingUp,
   Shield,
   LogOut,
-  ExternalLink
+  ExternalLink,
+  UserCheck,
+  UserX,
+  Clock
 } from 'lucide-react';
 
 interface DashboardStats {
@@ -22,6 +25,7 @@ interface DashboardStats {
   totalProjects: number;
   totalPortfolios: number;
   recentSignups: number;
+  pendingApprovals: number;
 }
 
 interface Student {
@@ -35,6 +39,17 @@ interface Student {
   created_at: string;
 }
 
+interface PendingRequest {
+  id: string;
+  user_id: string;
+  requested_role: string;
+  status: string;
+  requested_at: string;
+  profiles: {
+    full_name: string;
+  } | null;
+}
+
 export default function AdminDashboard() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -43,8 +58,10 @@ export default function AdminDashboard() {
     totalProjects: 0,
     totalPortfolios: 0,
     recentSignups: 0,
+    pendingApprovals: 0,
   });
   const [students, setStudents] = useState<Student[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -119,11 +136,18 @@ export default function AdminDashboard() {
         .select('*', { count: 'exact', head: true })
         .gte('created_at', thirtyDaysAgo.toISOString());
 
+      // Fetch pending role requests
+      const { count: pendingCount } = await supabase
+        .from('pending_role_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending');
+
       setStats({
         totalStudents: studentsCount || 0,
         totalProjects: projectsCount || 0,
         totalPortfolios: portfoliosCount || 0,
         recentSignups: recentCount || 0,
+        pendingApprovals: pendingCount || 0,
       });
 
       // Fetch all students
@@ -134,6 +158,33 @@ export default function AdminDashboard() {
 
       if (studentsError) throw studentsError;
       setStudents(studentsData || []);
+
+      // Fetch pending requests
+      const { data: requestsData, error: requestsError } = await supabase
+        .from('pending_role_requests')
+        .select('*')
+        .eq('status', 'pending')
+        .order('requested_at', { ascending: false });
+
+      if (requestsError) throw requestsError;
+      
+      // Fetch profile info for each request
+      const enrichedRequests = await Promise.all(
+        (requestsData || []).map(async (request) => {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', request.user_id)
+            .single();
+          
+          return {
+            ...request,
+            profiles: profileData,
+          };
+        })
+      );
+      
+      setPendingRequests(enrichedRequests);
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -146,6 +197,66 @@ export default function AdminDashboard() {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate('/');
+  };
+
+  const handleApproval = async (requestId: string, userId: string, role: string, approve: boolean) => {
+    try {
+      if (approve) {
+        // Add role to user_roles
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert([{
+            user_id: userId,
+            role: role as any,
+          }]);
+
+        if (roleError) throw roleError;
+
+        // Update request status
+        const { data: { user } } = await supabase.auth.getUser();
+        const { error: requestError } = await supabase
+          .from('pending_role_requests')
+          .update({
+            status: 'approved',
+            reviewed_by: user?.id,
+            reviewed_at: new Date().toISOString(),
+          })
+          .eq('id', requestId);
+
+        if (requestError) throw requestError;
+
+        toast({
+          title: 'Approved',
+          description: `User has been granted ${role} access`,
+        });
+      } else {
+        // Reject request
+        const { data: { user } } = await supabase.auth.getUser();
+        const { error } = await supabase
+          .from('pending_role_requests')
+          .update({
+            status: 'rejected',
+            reviewed_by: user?.id,
+            reviewed_at: new Date().toISOString(),
+          })
+          .eq('id', requestId);
+
+        if (error) throw error;
+
+        toast({
+          title: 'Rejected',
+          description: 'Access request has been rejected',
+        });
+      }
+
+      await fetchDashboardData();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
   };
 
   if (loading) {
@@ -192,6 +303,13 @@ export default function AdminDashboard() {
       color: 'text-orange-500',
       bgColor: 'bg-orange-500/10',
     },
+    {
+      title: 'Pending Approvals',
+      value: stats.pendingApprovals,
+      icon: Clock,
+      color: 'text-yellow-500',
+      bgColor: 'bg-yellow-500/10',
+    },
   ];
 
   return (
@@ -210,7 +328,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           {statCards.map((stat, index) => {
             const Icon = stat.icon;
             return (
@@ -237,6 +355,71 @@ export default function AdminDashboard() {
             );
           })}
         </div>
+
+        {/* Pending Role Requests */}
+        {pendingRequests.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="mb-8"
+          >
+            <Card className="glass-strong">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-6 w-6 text-yellow-500" />
+                  <div>
+                    <CardTitle>Pending Role Requests</CardTitle>
+                    <CardDescription>Review and approve or reject user role requests</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {pendingRequests.map((request) => (
+                    <Card key={request.id} className="glass-effect">
+                      <CardContent className="p-4">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <h3 className="font-semibold text-lg">
+                                {request.profiles?.full_name || 'Unknown User'}
+                              </h3>
+                              <Badge variant="outline" className="uppercase">
+                                {request.requested_role}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              Requested: {new Date(request.requested_at).toLocaleString()}
+                            </p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              onClick={() => handleApproval(request.id, request.user_id, request.requested_role, true)}
+                              className="bg-green-500 hover:bg-green-600"
+                              size="sm"
+                            >
+                              <UserCheck className="mr-2 h-4 w-4" />
+                              Approve
+                            </Button>
+                            <Button
+                              onClick={() => handleApproval(request.id, request.user_id, request.requested_role, false)}
+                              variant="destructive"
+                              size="sm"
+                            >
+                              <UserX className="mr-2 h-4 w-4" />
+                              Reject
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
         {/* Students Management */}
         <motion.div
