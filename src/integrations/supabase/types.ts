@@ -14,6 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
+      events: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          date: string
+          description: string | null
+          id: string
+          participants: string | null
+          time: string | null
+          title: string
+          type: string
+          updated_at: string | null
+          venue: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          date: string
+          description?: string | null
+          id?: string
+          participants?: string | null
+          time?: string | null
+          title: string
+          type: string
+          updated_at?: string | null
+          venue?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          date?: string
+          description?: string | null
+          id?: string
+          participants?: string | null
+          time?: string | null
+          title?: string
+          type?: string
+          updated_at?: string | null
+          venue?: string | null
+        }
+        Relationships: []
+      }
+      notices: {
+        Row: {
+          category: string
+          content: string
+          created_at: string | null
+          created_by: string | null
+          date: string
+          id: string
+          pinned: boolean | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          content: string
+          created_at?: string | null
+          created_by?: string | null
+          date: string
+          id?: string
+          pinned?: boolean | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string | null
+          created_by?: string | null
+          date?: string
+          id?: string
+          pinned?: boolean | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       pending_role_requests: {
         Row: {
           id: string

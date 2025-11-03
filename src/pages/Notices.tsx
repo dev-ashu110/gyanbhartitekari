@@ -2,75 +2,52 @@ import { useState, useEffect } from 'react';
 import { Calendar, AlertCircle, Pin } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
+import { PageTransition } from '@/components/PageTransition';
+import { TouchFeedback } from '@/components/TouchFeedback';
+
+interface Notice {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
+  pinned: boolean;
+  date: string;
+}
 
 export default function Notices() {
-  const [notices, setNotices] = useState<any[]>([]);
+  const [notices, setNotices] = useState<Notice[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load notices from localStorage
-    const saved = localStorage.getItem('schoolNotices');
-    if (saved) {
-      setNotices(JSON.parse(saved));
-    } else {
-      // Default notices if none in localStorage
-      setNotices([
-    {
-      id: 1,
-      title: 'Annual Day Celebration 2024',
-      date: '2024-12-15',
-      category: 'Event',
-      pinned: true,
-      content:
-        'Annual Day celebration will be held on December 15, 2024. All students are requested to attend with their parents. The event will showcase cultural performances, prize distribution, and achievements of the year.',
-    },
-    {
-      id: 2,
-      title: 'Winter Break Schedule',
-      date: '2024-12-20',
-      category: 'Holiday',
-      pinned: true,
-      content:
-        'School will remain closed from December 25, 2024 to January 5, 2025 for winter break. School will reopen on January 6, 2025. Enjoy your holidays!',
-    },
-    {
-      id: 3,
-      title: 'Parent-Teacher Meeting',
-      date: '2024-11-30',
-      category: 'Meeting',
-      pinned: false,
-      content:
-        'Parent-Teacher meeting scheduled for November 30, 2024. Parents are requested to meet respective class teachers to discuss their ward\'s progress and performance.',
-    },
-    {
-      id: 4,
-      title: 'Sports Day Announcement',
-      date: '2024-12-10',
-      category: 'Sports',
-      pinned: false,
-      content:
-        'Annual Sports Day will be organized on December 10, 2024. Students are requested to participate enthusiastically. Practice sessions will commence from November 25.',
-    },
-    {
-      id: 5,
-      title: 'Science Exhibition',
-      date: '2024-12-05',
-      category: 'Academic',
-      pinned: false,
-      content:
-        'Science exhibition will be held on December 5, 2024. Students from classes 6-12 are encouraged to participate with innovative projects. Registration deadline is November 28.',
-    },
-    {
-      id: 6,
-      title: 'Library Extension Hours',
-      date: '2024-11-15',
-      category: 'Facility',
-      pinned: false,
-      content:
-        'Library will be open until 5:00 PM from Monday to Friday for students who wish to study. Additional reading materials and digital resources have been added.',
-    },
-  ]);
-    }
+    fetchNotices();
+
+    // Real-time subscription
+    const channel = supabase
+      .channel('notices-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'notices' },
+        () => {
+          fetchNotices();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
+
+  const fetchNotices = async () => {
+    const { data } = await supabase
+      .from('notices')
+      .select('*')
+      .order('date', { ascending: false });
+
+    setNotices(data || []);
+    setLoading(false);
+  };
 
   const getCategoryColor = (category: string) => {
     const colors: { [key: string]: string } = {
@@ -95,8 +72,20 @@ export default function Notices() {
   const pinnedNotices = notices.filter((n) => n.pinned);
   const regularNotices = notices.filter((n) => !n.pinned);
 
+  if (loading) {
+    return (
+      <main className="min-h-screen pt-32 pb-20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading notices...</p>
+        </div>
+      </main>
+    );
+  }
+
   return (
-    <main className="min-h-screen pt-32 pb-20">
+    <PageTransition>
+      <main className="min-h-screen pt-32 pb-20">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-16 animate-in fade-in slide-in-from-bottom duration-1000">
@@ -115,11 +104,11 @@ export default function Notices() {
             </h2>
             <div className="space-y-4">
               {pinnedNotices.map((notice, index) => (
-                <Card
-                  key={notice.id}
-                  className="glass-strong p-6 rounded-3xl hover:scale-[1.02] transition-all duration-300"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
+                <TouchFeedback key={notice.id}>
+                  <Card
+                    className="glass-strong p-6 rounded-3xl hover:scale-[1.02] transition-all duration-300"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
                   <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
                     <div className="flex items-start space-x-3">
                       <AlertCircle className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
@@ -136,7 +125,8 @@ export default function Notices() {
                     </div>
                   </div>
                   <p className="text-muted-foreground leading-relaxed ml-0 md:ml-9">{notice.content}</p>
-                </Card>
+                  </Card>
+                </TouchFeedback>
               ))}
             </div>
           </div>
@@ -178,7 +168,8 @@ export default function Notices() {
             media channels for instant updates.
           </p>
         </Card>
-      </div>
-    </main>
+        </div>
+      </main>
+    </PageTransition>
   );
 }

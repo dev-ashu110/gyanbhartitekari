@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { EventManager } from '@/components/admin/EventManager';
+import { NoticeManager } from '@/components/admin/NoticeManager';
+import { PageTransition } from '@/components/PageTransition';
 import { 
   Users, 
   BookOpen, 
@@ -17,7 +20,9 @@ import {
   ExternalLink,
   UserCheck,
   UserX,
-  Clock
+  Clock,
+  Calendar,
+  Bell
 } from 'lucide-react';
 
 interface DashboardStats {
@@ -313,8 +318,9 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="min-h-screen pt-32 pb-16">
-      <div className="container mx-auto px-4">
+    <PageTransition>
+      <div className="min-h-screen pt-32 pb-16">
+        <div className="container mx-auto px-4">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -439,9 +445,17 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="all" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
+                <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="all">All Students</TabsTrigger>
                   <TabsTrigger value="recent">Recent (30 days)</TabsTrigger>
+                  <TabsTrigger value="events">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Events
+                  </TabsTrigger>
+                  <TabsTrigger value="notices">
+                    <Bell className="h-4 w-4 mr-2" />
+                    Notices
+                  </TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="all" className="space-y-4 mt-6">
@@ -535,11 +549,20 @@ export default function AdminDashboard() {
                     )}
                   </div>
                 </TabsContent>
+
+                <TabsContent value="events" className="mt-6">
+                  <EventManager />
+                </TabsContent>
+
+                <TabsContent value="notices" className="mt-6">
+                  <NoticeManager />
+                </TabsContent>
               </Tabs>
             </CardContent>
           </Card>
         </motion.div>
+        </div>
       </div>
-    </div>
+    </PageTransition>
   );
 }

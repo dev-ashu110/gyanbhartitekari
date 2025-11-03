@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface Profile {
   id: string;
@@ -25,6 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -66,44 +68,71 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // Set up auth state listener
+    let mounted = true;
+
+    // Initialize session
+    const initSession = async () => {
+      try {
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Session restore error:', error);
+          toast({
+            title: 'Session Error',
+            description: 'Failed to restore session. Please sign in again.',
+            variant: 'destructive',
+          });
+          setLoading(false);
+          return;
+        }
+
+        if (mounted && currentSession) {
+          setSession(currentSession);
+          setUser(currentSession.user);
+          const profileData = await fetchProfile(currentSession.user.id);
+          setProfile(profileData);
+        }
+        setLoading(false);
+      } catch (err) {
+        console.error('Init error:', err);
+        setLoading(false);
+      }
+    };
+
+    initSession();
+
+    // Auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
+        if (!mounted) return;
 
-        if (currentSession?.user) {
-          // Defer profile fetch to avoid deadlocks
-          setTimeout(async () => {
-            const profileData = await fetchProfile(currentSession.user.id);
-            setProfile(profileData);
-            setLoading(false);
-          }, 0);
-        } else {
+        console.log('Auth event:', event);
+        
+        if (event === 'SIGNED_OUT') {
+          setSession(null);
+          setUser(null);
           setProfile(null);
-          setLoading(false);
+        } else if (event === 'TOKEN_REFRESHED') {
+          setSession(currentSession);
+        } else if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+          setSession(currentSession);
+          setUser(currentSession?.user ?? null);
+
+          if (currentSession?.user) {
+            setTimeout(async () => {
+              const profileData = await fetchProfile(currentSession.user.id);
+              setProfile(profileData);
+            }, 0);
+          }
         }
       }
     );
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-
-      if (currentSession?.user) {
-        setTimeout(async () => {
-          const profileData = await fetchProfile(currentSession.user.id);
-          setProfile(profileData);
-          setLoading(false);
-        }, 0);
-      } else {
-        setLoading(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [toast]);
 
   const signOut = async () => {
     try {

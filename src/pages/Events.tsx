@@ -1,67 +1,67 @@
+import { useState, useEffect } from 'react';
 import { Calendar, Clock, MapPin, Users } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
+import { PageTransition } from '@/components/PageTransition';
+import { TouchFeedback } from '@/components/TouchFeedback';
+
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  time: string;
+  venue: string;
+  type: string;
+  participants: string;
+}
 
 export default function Events() {
-  const upcomingEvents = [
-    {
-      id: 1,
-      title: 'Annual Day Celebration',
-      date: '2024-12-15',
-      time: '10:00 AM - 2:00 PM',
-      venue: 'School Auditorium',
-      type: 'Cultural',
-      description:
-        'Grand annual day celebration featuring cultural performances, prize distribution, and showcase of student achievements throughout the year.',
-      participants: 'All Students & Parents',
-    },
-    {
-      id: 2,
-      title: 'Sports Day 2024',
-      date: '2024-12-10',
-      time: '8:00 AM - 4:00 PM',
-      venue: 'School Sports Ground',
-      type: 'Sports',
-      description:
-        'Annual sports meet with athletics, team sports, and friendly competitions. Students will participate in various sporting events.',
-      participants: 'Classes 1-12',
-    },
-    {
-      id: 3,
-      title: 'Science Exhibition',
-      date: '2024-12-05',
-      time: '9:00 AM - 3:00 PM',
-      venue: 'Science Labs & Corridors',
-      type: 'Academic',
-      description:
-        'Students will present innovative science projects and experiments. Parents and guests are invited to view the exhibits.',
-      participants: 'Classes 6-12',
-    },
-  ];
+  const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
+  const [pastEvents, setPastEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const pastEvents = [
-    {
-      id: 4,
-      title: 'Diwali Celebration',
-      date: '2024-11-01',
-      type: 'Cultural',
-      description: 'Festive celebration with rangoli competition, diya decoration, and cultural programs.',
-    },
-    {
-      id: 5,
-      title: 'Independence Day',
-      date: '2024-08-15',
-      type: 'National',
-      description: 'Flag hoisting ceremony followed by cultural programs and patriotic performances.',
-    },
-    {
-      id: 6,
-      title: 'Teacher\'s Day Celebration',
-      date: '2024-09-05',
-      type: 'Special',
-      description: 'Students organized special programs to honor and appreciate teachers.',
-    },
-  ];
+  useEffect(() => {
+    fetchEvents();
+
+    // Real-time subscription
+    const channel = supabase
+      .channel('events-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'events' },
+        () => {
+          fetchEvents();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const fetchEvents = async () => {
+    const today = new Date().toISOString().split('T')[0];
+    
+    const { data: upcoming } = await supabase
+      .from('events')
+      .select('*')
+      .gte('date', today)
+      .order('date', { ascending: true });
+
+    const { data: past } = await supabase
+      .from('events')
+      .select('*')
+      .lt('date', today)
+      .order('date', { ascending: false })
+      .limit(6);
+
+    setUpcomingEvents(upcoming || []);
+    setPastEvents(past || []);
+    setLoading(false);
+  };
 
   const getTypeColor = (type: string) => {
     const colors: { [key: string]: string } = {
@@ -82,9 +82,21 @@ export default function Events() {
     });
   };
 
+  if (loading) {
+    return (
+      <main className="min-h-screen pt-32 pb-20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading events...</p>
+        </div>
+      </main>
+    );
+  }
+
   return (
-    <main className="min-h-screen pt-32 pb-20">
-      <div className="container mx-auto px-4">
+    <PageTransition>
+      <main className="min-h-screen pt-32 pb-20">
+        <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-16 animate-in fade-in slide-in-from-bottom duration-1000">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 text-gradient">Events</h1>
@@ -96,13 +108,18 @@ export default function Events() {
         {/* Upcoming Events */}
         <div className="mb-16">
           <h2 className="text-3xl font-bold mb-8 text-foreground">Upcoming Events</h2>
-          <div className="space-y-6">
-            {upcomingEvents.map((event, index) => (
-              <Card
-                key={event.id}
-                className="glass-strong p-6 md:p-8 rounded-3xl hover:scale-[1.01] transition-all duration-300"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
+          {upcomingEvents.length === 0 ? (
+            <Card className="glass p-8 text-center rounded-3xl">
+              <p className="text-muted-foreground">No upcoming events at the moment.</p>
+            </Card>
+          ) : (
+            <div className="space-y-6">
+              {upcomingEvents.map((event, index) => (
+                <TouchFeedback key={event.id}>
+                  <Card
+                    className="glass-strong p-6 md:p-8 rounded-3xl hover:scale-[1.01] transition-all duration-300"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
                 <div className="grid md:grid-cols-3 gap-6">
                   {/* Date Section */}
                   <div className="md:col-span-1">
@@ -137,9 +154,11 @@ export default function Events() {
                     </div>
                   </div>
                 </div>
-              </Card>
-            ))}
-          </div>
+                  </Card>
+                </TouchFeedback>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Past Events */}
@@ -176,7 +195,8 @@ export default function Events() {
             Check this page regularly for updates on upcoming events and activities.
           </p>
         </Card>
-      </div>
-    </main>
+        </div>
+      </main>
+    </PageTransition>
   );
 }
