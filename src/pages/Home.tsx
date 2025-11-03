@@ -10,7 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import PageWrapper from '@/components/PageWrapper';
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
   const typewriterTexts = [
     "Empowering Minds, Inspiring Futures",

@@ -131,18 +131,21 @@ export type Database = {
           full_name: string | null
           id: string
           updated_at: string
+          verified: boolean | null
         }
         Insert: {
           created_at?: string
           full_name?: string | null
           id: string
           updated_at?: string
+          verified?: boolean | null
         }
         Update: {
           created_at?: string
           full_name?: string | null
           id?: string
           updated_at?: string
+          verified?: boolean | null
         }
         Relationships: []
       }

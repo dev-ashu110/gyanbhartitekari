@@ -114,14 +114,6 @@ export const RoleSelectionDialog = ({ open, onOpenChange, userId }: RoleSelectio
       color: 'from-orange-500 to-red-500',
       approvalNeeded: true,
     },
-    {
-      id: 'admin',
-      title: 'Admin',
-      description: 'Manage school content, approvals, and system settings',
-      icon: Shield,
-      color: 'from-red-500 to-pink-500',
-      approvalNeeded: true,
-    },
   ];
 
   return (

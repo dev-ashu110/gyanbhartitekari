@@ -128,9 +128,14 @@ const Auth = () => {
       if (error) throw error;
 
       toast({
-        title: 'Success!',
-        description: 'Account created. Check your email to confirm your address.',
+        title: 'Verification Email Sent!',
+        description: 'Please check your email and click the verification link to activate your account.',
       });
+      
+      // Clear form
+      setEmail('');
+      setPassword('');
+      setFullName('');
     } catch (error: any) {
       console.error('Sign up error:', error);
       const msg = String(error?.message || '').toLowerCase();
