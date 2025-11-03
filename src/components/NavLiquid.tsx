@@ -242,7 +242,7 @@ export const NavLiquid = () => {
                       Admin Dashboard
                     </motion.div>
                   </Link>
-                ))}
+                )}
 
                 {user && (
                   <motion.div
