@@ -10,5 +10,21 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
+# Gyan Bharti Senior Secondary School
+# https://gyanbhartitekari.lovable.app
+
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /admin-dashboard/
+Disallow: /dashboard/
+Disallow: /auth/
+Disallow: /student/
+Disallow: /teacher/
+Disallow: /visitor/
+
+# Sitemap location
+Sitemap: https://gyanbhartitekari.lovable.app/sitemap.xml
+
+# Crawl-delay for politeness
+Crawl-delay: 1

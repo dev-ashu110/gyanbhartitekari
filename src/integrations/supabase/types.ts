@@ -14,6 +14,119 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          category: string
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          display_order: number | null
+          id: string
+          image_url: string | null
+          title: string
+          updated_at: string | null
+          year: number
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          title: string
+          updated_at?: string | null
+          year: number
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          title?: string
+          updated_at?: string | null
+          year?: number
+        }
+        Relationships: []
+      }
+      analytics_logs: {
+        Row: {
+          created_at: string | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          page_path: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          page_path?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          page_path?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      event_registrations: {
+        Row: {
+          created_at: string | null
+          event_id: string
+          id: string
+          parent_email: string | null
+          parent_phone: string | null
+          status: string | null
+          student_class: string
+          student_name: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_id: string
+          id?: string
+          parent_email?: string | null
+          parent_phone?: string | null
+          status?: string | null
+          student_class: string
+          student_name: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: string
+          id?: string
+          parent_email?: string | null
+          parent_phone?: string | null
+          status?: string | null
+          student_class?: string
+          student_name?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_registrations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           created_at: string | null
@@ -190,6 +303,30 @@ export type Database = {
           id?: string
           updated_at?: string
           verified?: boolean | null
+        }
+        Relationships: []
+      }
+      prospectus_content: {
+        Row: {
+          content: string
+          id: string
+          section: string
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          content: string
+          id?: string
+          section: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          content?: string
+          id?: string
+          section?: string
+          updated_at?: string | null
+          updated_by?: string | null
         }
         Relationships: []
       }
@@ -473,6 +610,48 @@ export type Database = {
           photo_url?: string | null
           qualification?: string | null
           subject?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      testimonials: {
+        Row: {
+          author_name: string
+          author_role: string
+          avatar_url: string | null
+          content: string
+          created_at: string | null
+          created_by: string | null
+          display_order: number | null
+          id: string
+          is_featured: boolean | null
+          rating: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          author_name: string
+          author_role: string
+          avatar_url?: string | null
+          content: string
+          created_at?: string | null
+          created_by?: string | null
+          display_order?: number | null
+          id?: string
+          is_featured?: boolean | null
+          rating?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          author_name?: string
+          author_role?: string
+          avatar_url?: string | null
+          content?: string
+          created_at?: string | null
+          created_by?: string | null
+          display_order?: number | null
+          id?: string
+          is_featured?: boolean | null
+          rating?: number | null
           updated_at?: string | null
         }
         Relationships: []

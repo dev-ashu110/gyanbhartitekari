@@ -9,6 +9,8 @@ import { NavLiquid } from "@/components/NavLiquid";
 import { Footer } from "@/components/Footer";
 import { ParallaxLayers } from "@/components/ParallaxLayers";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { NotificationBar } from "@/components/NotificationBar";
+import { SupportChat } from "@/components/SupportChat";
 import GlobalBackground from "@/components/GlobalBackground";
 import Home from "./pages/Home";
 import About from "./pages/About";
@@ -46,6 +48,8 @@ const App = () => (
               <ParallaxLayers />
               <NavLiquid />
               <ScrollToTop />
+              <NotificationBar />
+              <SupportChat />
               <div className="relative z-10">
                 <Routes>
                   <Route path="/" element={<Home />} />

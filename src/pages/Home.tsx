@@ -8,9 +8,39 @@ import { TypewriterText } from '@/components/TypewriterText';
 import { TouchFeedback } from '@/components/TouchFeedback';
 import { useAuth } from '@/contexts/AuthContext';
 import PageWrapper from '@/components/PageWrapper';
+import { AchievementsSection } from '@/components/AchievementsSection';
+import { TestimonialsCarousel } from '@/components/TestimonialsCarousel';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Home() {
   const { user, profile } = useAuth();
+  const [counts, setCounts] = useState({
+    students: '5500+',
+    faculty: '150+',
+    years: '15+',
+    success: '95%'
+  });
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      const { data } = await supabase
+        .from('site_config')
+        .select('key, value')
+        .in('key', ['students_count', 'faculty_count', 'years_excellence', 'success_rate']);
+      
+      if (data) {
+        const config = data.reduce((acc, { key, value }) => ({ ...acc, [key]: value }), {} as any);
+        setCounts({
+          students: `${config.students_count}+`,
+          faculty: `${config.faculty_count}+`,
+          years: `${config.years_excellence}+`,
+          success: `${config.success_rate}%`
+        });
+      }
+    };
+    fetchCounts();
+  }, []);
 
   const typewriterTexts = [
     "Empowering Minds, Inspiring Futures",
@@ -27,10 +57,10 @@ export default function Home() {
   ];
 
   const achievements = [
-    { value: '500+', label: 'Students' },
-    { value: '50+', label: 'Faculty Members' },
-    { value: '15+', label: 'Years of Excellence' },
-    { value: '95%', label: 'Success Rate' },
+    { value: counts.students, label: 'Students' },
+    { value: counts.faculty, label: 'Faculty Members' },
+    { value: counts.years, label: 'Years of Excellence' },
+    { value: counts.success, label: 'Success Rate' },
   ];
 
   return (
@@ -164,6 +194,12 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* School Achievements Section */}
+      <AchievementsSection />
+
+      {/* Testimonials Section */}
+      <TestimonialsCarousel />
 
       {/* CTA Section */}
       <section className="py-20 relative">
