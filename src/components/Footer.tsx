@@ -18,13 +18,20 @@ export const Footer = () => {
           <div>
             <h3 className="font-bold text-lg mb-4 text-foreground">Quick Links</h3>
             <ul className="space-y-2">
-              {['About Us', 'Admissions', 'Academics', 'Contact'].map((item) => (
-                <li key={item}>
+              {[
+                { name: 'Home', path: '/' },
+                { name: 'About Us', path: '/about' },
+                { name: 'Admissions', path: '/admissions' },
+                { name: 'Events', path: '/events' },
+                { name: 'Gallery', path: '/gallery' },
+                { name: 'Contact', path: '/contact' },
+              ].map((item) => (
+                <li key={item.name}>
                   <Link
-                    to={`/${item.toLowerCase().replace(' ', '-')}`}
+                    to={item.path}
                     className="text-muted-foreground hover:text-primary transition-colors text-sm"
                   >
-                    {item}
+                    {item.name}
                   </Link>
                 </li>
               ))}
@@ -47,9 +54,14 @@ export const Footer = () => {
               </li>
               <li className="flex items-center space-x-2 text-muted-foreground text-sm">
                 <Mail className="h-4 w-4 flex-shrink-0" />
-                <a href="mailto:info@gyanbhartitekari.com" className="hover:text-primary transition-colors">
-                  info@gyanbhartitekari.com
-                </a>
+                <div className="flex flex-col">
+                  <a href="mailto:gyanbhartitekari@yahoo.com" className="hover:text-primary transition-colors">
+                    gyanbhartitekari@yahoo.com
+                  </a>
+                  <a href="mailto:info@gyanbhartitekari.com" className="hover:text-primary transition-colors">
+                    info@gyanbhartitekari.com
+                  </a>
+                </div>
               </li>
             </ul>
           </div>
@@ -89,8 +101,32 @@ export const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-border mt-8 pt-8 text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} Gyan Bharti Senior Secondary School. All rights reserved.</p>
+        <div className="border-t border-border mt-8 pt-8 space-y-4">
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">
+              &copy; {new Date().getFullYear()} Gyan Bharti Sr. Sec. School — All rights reserved
+            </p>
+          </div>
+          <div className="text-center">
+            <a
+              href="https://www.instagram.com/aashutosh_8055?igsh=MXRjYjYyMTBhNzYxdg=="
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
+            >
+              Made with ❤️ by <span className="font-semibold">Aashutosh Ranjan (KTR)</span>
+            </a>
+          </div>
+          <div className="text-center">
+            <a
+              href="https://www.instagram.com/aashutosh_8055?igsh=MXRjYjYyMTBhNzYxdg=="
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-primary hover:underline"
+            >
+              Support / Help
+            </a>
+          </div>
         </div>
       </div>
     </footer>

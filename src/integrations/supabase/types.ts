@@ -56,6 +56,50 @@ export type Database = {
         }
         Relationships: []
       }
+      gallery_images: {
+        Row: {
+          attached_event_id: string | null
+          caption: string | null
+          created_at: string | null
+          id: string
+          is_cover: boolean | null
+          is_thumbnail: boolean | null
+          title: string | null
+          uploaded_by: string | null
+          url: string
+        }
+        Insert: {
+          attached_event_id?: string | null
+          caption?: string | null
+          created_at?: string | null
+          id?: string
+          is_cover?: boolean | null
+          is_thumbnail?: boolean | null
+          title?: string | null
+          uploaded_by?: string | null
+          url: string
+        }
+        Update: {
+          attached_event_id?: string | null
+          caption?: string | null
+          created_at?: string | null
+          id?: string
+          is_cover?: boolean | null
+          is_thumbnail?: boolean | null
+          title?: string | null
+          uploaded_by?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gallery_images_attached_event_id_fkey"
+            columns: ["attached_event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notices: {
         Row: {
           category: string
@@ -182,6 +226,30 @@ export type Database = {
           principal_name?: string | null
           school_name?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      site_config: {
+        Row: {
+          description: string | null
+          id: string
+          key: string
+          updated_at: string | null
+          value: string
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string | null
+          value: string
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string | null
+          value?: string
         }
         Relationships: []
       }
@@ -405,6 +473,39 @@ export type Database = {
           photo_url?: string | null
           qualification?: string | null
           subject?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      timetables: {
+        Row: {
+          class: string
+          created_at: string | null
+          day: string
+          end_time: string
+          id: string
+          period_name: string
+          start_time: string
+          updated_at: string | null
+        }
+        Insert: {
+          class: string
+          created_at?: string | null
+          day: string
+          end_time: string
+          id?: string
+          period_name: string
+          start_time: string
+          updated_at?: string | null
+        }
+        Update: {
+          class?: string
+          created_at?: string | null
+          day?: string
+          end_time?: string
+          id?: string
+          period_name?: string
+          start_time?: string
           updated_at?: string | null
         }
         Relationships: []

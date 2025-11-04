@@ -29,6 +29,32 @@ export const NavLiquid = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Close menu on outside click
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.mobile-menu') && !target.closest('.menu-toggle')) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isMobileMenuOpen]);
+
   const handleSignOut = async () => {
     try {
       await signOut();
@@ -191,7 +217,7 @@ export const NavLiquid = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="lg:hidden rounded-full"
+                className="lg:hidden rounded-full menu-toggle"
               >
                 {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </Button>
@@ -207,7 +233,7 @@ export const NavLiquid = () => {
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
-              className="lg:hidden mt-2 glass-strong rounded-3xl overflow-hidden"
+              className="lg:hidden mt-2 glass-strong rounded-3xl overflow-hidden mobile-menu"
             >
               <div className="p-4 flex flex-col space-y-2">
                 {navLinks.map((link, index) => (

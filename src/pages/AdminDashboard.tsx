@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { EventManager } from '@/components/admin/EventManager';
 import { NoticeManager } from '@/components/admin/NoticeManager';
+import { GalleryManager } from '@/components/admin/GalleryManager';
+import { TimetableManager } from '@/components/admin/TimetableManager';
 import { PageTransition } from '@/components/PageTransition';
 import { 
   Users, 
@@ -22,7 +24,9 @@ import {
   UserX,
   Clock,
   Calendar,
-  Bell
+  Bell,
+  Image,
+  CalendarClock
 } from 'lucide-react';
 
 interface DashboardStats {
@@ -445,9 +449,9 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="all" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 gap-2">
                   <TabsTrigger value="all">All Students</TabsTrigger>
-                  <TabsTrigger value="recent">Recent (30 days)</TabsTrigger>
+                  <TabsTrigger value="recent">Recent</TabsTrigger>
                   <TabsTrigger value="events">
                     <Calendar className="h-4 w-4 mr-2" />
                     Events
@@ -455,6 +459,14 @@ export default function AdminDashboard() {
                   <TabsTrigger value="notices">
                     <Bell className="h-4 w-4 mr-2" />
                     Notices
+                  </TabsTrigger>
+                  <TabsTrigger value="gallery">
+                    <Image className="h-4 w-4 mr-2" />
+                    Gallery
+                  </TabsTrigger>
+                  <TabsTrigger value="timetable">
+                    <CalendarClock className="h-4 w-4 mr-2" />
+                    Timetable
                   </TabsTrigger>
                 </TabsList>
                 
@@ -556,6 +568,14 @@ export default function AdminDashboard() {
 
                 <TabsContent value="notices" className="mt-6">
                   <NoticeManager />
+                </TabsContent>
+
+                <TabsContent value="gallery" className="mt-6">
+                  <GalleryManager />
+                </TabsContent>
+
+                <TabsContent value="timetable" className="mt-6">
+                  <TimetableManager />
                 </TabsContent>
               </Tabs>
             </CardContent>
