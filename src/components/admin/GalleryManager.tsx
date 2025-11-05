@@ -36,6 +36,7 @@ export const GalleryManager = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [filter, setFilter] = useState<'all' | 'covers' | 'thumbnails' | 'event-attached'>('all');
   const [hasError, setHasError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const { toast } = useToast();
 
   // Form state for new upload
@@ -49,10 +50,22 @@ export const GalleryManager = () => {
   });
 
   useEffect(() => {
-    fetchImages();
-    fetchEvents();
-    subscribeToImages();
-  }, []);
+    const initializeGallery = async () => {
+      try {
+        setLoading(true);
+        setHasError(false);
+        await Promise.all([fetchImages(), fetchEvents()]);
+        subscribeToImages();
+      } catch (error) {
+        console.error('Gallery initialization error:', error);
+        setHasError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeGallery();
+  }, [retryCount]);
 
   const subscribeToImages = () => {
     const channel = supabase
@@ -69,39 +82,31 @@ export const GalleryManager = () => {
 
   const fetchImages = async () => {
     try {
-      setLoading(true);
-      setHasError(false);
       const { data, error } = await supabase
         .from('gallery_images')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Gallery fetch error:', error);
-        setHasError(true);
-        throw error;
-      }
+      if (error) throw error;
       setImages(data || []);
+      setHasError(false);
     } catch (error: any) {
-      console.error('Failed to fetch gallery images:', error);
       setHasError(true);
-      toast({ 
-        title: 'Error fetching images', 
-        description: 'Unable to load gallery images. Please check your permissions.', 
-        variant: 'destructive' 
-      });
-    } finally {
-      setLoading(false);
+      throw error;
     }
   };
 
   const fetchEvents = async () => {
     try {
-      const { data, error } = await supabase.from('events').select('id, title').order('date', { ascending: false });
+      const { data, error } = await supabase
+        .from('events')
+        .select('id, title')
+        .order('date', { ascending: false });
       if (error) throw error;
       setEvents(data || []);
     } catch (error: any) {
-      console.error('Error fetching events:', error);
+      // Events are optional, don't fail the whole component
+      setEvents([]);
     }
   };
 
@@ -255,25 +260,60 @@ export const GalleryManager = () => {
     return true;
   });
 
-  if (hasError) {
+  if (loading) {
     return (
       <div className="space-y-8">
         <Card className="glass-strong p-6 rounded-3xl">
           <div className="text-center py-12">
-            <ImageIcon className="h-16 w-16 mx-auto text-destructive mb-4" />
-            <h3 className="text-xl font-bold text-foreground mb-2">Unable to Load Gallery</h3>
-            <p className="text-muted-foreground mb-4">There was an error loading the gallery images. This may be a permissions issue.</p>
-            <Button onClick={fetchImages} variant="outline" className="rounded-full">
-              Try Again
-            </Button>
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              className="inline-block"
+            >
+              <ImageIcon className="h-16 w-16 text-primary" />
+            </motion.div>
+            <h3 className="text-xl font-bold text-foreground mb-2 mt-4">Loading Gallery...</h3>
+            <p className="text-muted-foreground">Please wait while we fetch your images</p>
           </div>
         </Card>
       </div>
     );
   }
 
+  if (hasError) {
+    return (
+      <div className="space-y-8">
+        <Card className="glass-strong p-6 rounded-3xl">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="text-center py-12"
+          >
+            <ImageIcon className="h-16 w-16 mx-auto text-destructive mb-4" />
+            <h3 className="text-xl font-bold text-foreground mb-2">Unable to Load Gallery</h3>
+            <p className="text-muted-foreground mb-6">
+              There was an error loading the gallery images. Please check your connection and try again.
+            </p>
+            <Button 
+              onClick={() => setRetryCount(prev => prev + 1)} 
+              variant="outline" 
+              className="rounded-full"
+            >
+              Try Again
+            </Button>
+          </motion.div>
+        </Card>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-8">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-8"
+    >
       {/* Upload Section */}
       <Card className="glass-strong p-6 rounded-3xl">
         <h3 className="text-2xl font-bold mb-6 text-foreground flex items-center gap-2">
@@ -286,13 +326,14 @@ export const GalleryManager = () => {
             <Input id="image-file" type="file" accept="image/*" onChange={handleFileChange} className="glass" />
           </div>
           <div>
-            <Label htmlFor="image-title">Title (Optional)</Label>
+            <Label htmlFor="image-title">Title</Label>
             <Input
               id="image-title"
               value={newImage.title}
               onChange={(e) => setNewImage({ ...newImage, title: e.target.value })}
-              placeholder="Image title"
+              placeholder="Enter image title"
               className="glass"
+              required
             />
           </div>
           <div>
@@ -418,13 +459,17 @@ export const GalleryManager = () => {
         </AnimatePresence>
       </div>
 
-      {loading && <p className="text-center text-muted-foreground">Loading images...</p>}
       {!loading && filteredImages.length === 0 && (
-        <div className="text-center py-12">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center py-12"
+        >
           <ImageIcon className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <p className="text-muted-foreground">No images found. Upload your first image!</p>
-        </div>
+          <h3 className="text-lg font-semibold text-foreground mb-2">No Images Yet</h3>
+          <p className="text-muted-foreground mb-4">Upload your first image to get started!</p>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 };
