@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import PageWrapper from '@/components/PageWrapper';
+import { AccessDenied } from '@/components/AccessDenied';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -29,6 +30,7 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [showUploadForm, setShowUploadForm] = useState(false);
+  const [isStudent, setIsStudent] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -60,10 +62,12 @@ export default function StudentDashboard() {
         .single();
 
       if (!roleData || roleData.role !== 'student') {
-        navigate('/');
+        setIsStudent(false);
+        setLoading(false);
         return;
       }
 
+      setIsStudent(true);
       setRole(roleData);
       await fetchSubmissions(authUser.id);
     } catch (error) {
@@ -191,6 +195,10 @@ export default function StudentDashboard() {
         </div>
       </PageWrapper>
     );
+  }
+
+  if (!isStudent) {
+    return <AccessDenied title="Student Access Only" message="You need to have a student role to access this dashboard." />;
   }
 
   return (

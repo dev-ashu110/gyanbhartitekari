@@ -35,6 +35,7 @@ export const GalleryManager = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [filter, setFilter] = useState<'all' | 'covers' | 'thumbnails' | 'event-attached'>('all');
+  const [hasError, setHasError] = useState(false);
   const { toast } = useToast();
 
   // Form state for new upload
@@ -68,15 +69,27 @@ export const GalleryManager = () => {
 
   const fetchImages = async () => {
     try {
+      setLoading(true);
+      setHasError(false);
       const { data, error } = await supabase
         .from('gallery_images')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Gallery fetch error:', error);
+        setHasError(true);
+        throw error;
+      }
       setImages(data || []);
     } catch (error: any) {
-      toast({ title: 'Error fetching images', description: error.message, variant: 'destructive' });
+      console.error('Failed to fetch gallery images:', error);
+      setHasError(true);
+      toast({ 
+        title: 'Error fetching images', 
+        description: 'Unable to load gallery images. Please check your permissions.', 
+        variant: 'destructive' 
+      });
     } finally {
       setLoading(false);
     }
@@ -241,6 +254,23 @@ export const GalleryManager = () => {
     if (filter === 'event-attached') return img.attached_event_id !== null;
     return true;
   });
+
+  if (hasError) {
+    return (
+      <div className="space-y-8">
+        <Card className="glass-strong p-6 rounded-3xl">
+          <div className="text-center py-12">
+            <ImageIcon className="h-16 w-16 mx-auto text-destructive mb-4" />
+            <h3 className="text-xl font-bold text-foreground mb-2">Unable to Load Gallery</h3>
+            <p className="text-muted-foreground mb-4">There was an error loading the gallery images. This may be a permissions issue.</p>
+            <Button onClick={fetchImages} variant="outline" className="rounded-full">
+              Try Again
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">

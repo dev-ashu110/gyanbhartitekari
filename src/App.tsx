@@ -9,6 +9,7 @@ import { NavLiquid } from "@/components/NavLiquid";
 import { Footer } from "@/components/Footer";
 import { ParallaxLayers } from "@/components/ParallaxLayers";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { AutoScrollToTop } from "@/components/AutoScrollToTop";
 import { NotificationBar } from "@/components/NotificationBar";
 import { SupportChat } from "@/components/SupportChat";
 import GlobalBackground from "@/components/GlobalBackground";
@@ -47,6 +48,7 @@ const App = () => (
               <MouseFollower />
               <ParallaxLayers />
               <NavLiquid />
+              <AutoScrollToTop />
               <ScrollToTop />
               <NotificationBar />
               <SupportChat />

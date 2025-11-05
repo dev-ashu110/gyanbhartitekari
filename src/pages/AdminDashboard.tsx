@@ -12,7 +12,8 @@ import { NoticeManager } from '@/components/admin/NoticeManager';
 import { GalleryManager } from '@/components/admin/GalleryManager';
 import { TimetableManager } from '@/components/admin/TimetableManager';
 import { PageTransition } from '@/components/PageTransition';
-import { 
+import { AccessDenied } from '@/components/AccessDenied';
+import {
   Users, 
   BookOpen, 
   GraduationCap, 
@@ -264,7 +265,7 @@ export default function AdminDashboard() {
   }
 
   if (!isAdmin) {
-    return null;
+    return <AccessDenied />;
   }
 
   const statCards = [

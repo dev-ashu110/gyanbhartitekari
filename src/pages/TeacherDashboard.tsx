@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import PageWrapper from '@/components/PageWrapper';
+import { AccessDenied } from '@/components/AccessDenied';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -27,6 +28,7 @@ export default function TeacherDashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedSubmission, setSelectedSubmission] = useState<string | null>(null);
   const [feedback, setFeedback] = useState('');
+  const [isTeacher, setIsTeacher] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -52,10 +54,12 @@ export default function TeacherDashboard() {
         .single();
 
       if (!roleData || roleData.role !== 'teacher') {
-        navigate('/');
+        setIsTeacher(false);
+        setLoading(false);
         return;
       }
 
+      setIsTeacher(true);
       await fetchSubmissions();
     } catch (error) {
       console.error('Auth error:', error);
@@ -122,6 +126,10 @@ export default function TeacherDashboard() {
         </div>
       </PageWrapper>
     );
+  }
+
+  if (!isTeacher) {
+    return <AccessDenied title="Teacher Access Only" message="You need to have a teacher role to access this dashboard." />;
   }
 
   const pendingCount = submissions.filter(s => s.status === 'pending').length;
