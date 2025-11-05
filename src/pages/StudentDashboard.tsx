@@ -90,6 +90,25 @@ export default function StudentDashboard() {
     e.preventDefault();
     if (!formData.file || !user) return;
 
+    // Validate file type
+    const validTypes = [
+      'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+    ];
+    
+    if (!validTypes.includes(formData.file.type)) {
+      toast({
+        title: "Invalid File Type",
+        description: "Please upload an image or document file",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Validate file size (10MB max)
     if (formData.file.size > 10 * 1024 * 1024) {
       toast({

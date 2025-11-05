@@ -100,8 +100,34 @@ export const GalleryManager = () => {
   };
 
   const uploadImage = async () => {
-    if (!newImage.file) {
-      toast({ title: 'No file selected', variant: 'destructive' });
+    if (!newImage.file || !newImage.title.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please select a file and provide a title",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(newImage.file.type)) {
+      toast({
+        title: "Invalid File Type",
+        description: "Please upload an image file (JPEG, PNG, GIF, or WebP)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (5MB max for images)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (newImage.file.size > maxSize) {
+      toast({
+        title: "File Too Large",
+        description: "Image must be smaller than 5MB",
+        variant: "destructive",
+      });
       return;
     }
 
