@@ -87,30 +87,14 @@ export default function AdminDashboard() {
         return;
       }
 
-      // Check if user has admin role
-      const { data: roleData, error: roleError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'admin')
-        .single();
-
-      if (roleError || !roleData) {
-        toast({
-          title: 'Access Denied',
-          description: 'You do not have admin privileges.',
-          variant: 'destructive',
-        });
-        navigate('/');
-        return;
-      }
-
+      // Let RLS policies handle authorization naturally by attempting to fetch admin-only data
+      await fetchDashboardData();
       setIsAdmin(true);
-      fetchDashboardData();
     } catch (error: any) {
+      // If RLS policy violation, user is not admin
       toast({
-        title: 'Error',
-        description: error.message,
+        title: 'Access Denied',
+        description: 'You do not have admin privileges.',
         variant: 'destructive',
       });
       navigate('/');

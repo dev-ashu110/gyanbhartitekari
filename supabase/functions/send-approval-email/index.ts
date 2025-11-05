@@ -146,8 +146,9 @@ serve(async (req) => {
     );
   } catch (error: any) {
     console.error('Error in send-approval-email:', error);
+    // Return generic error message to prevent information leakage
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Unable to process approval request. Please try again later.' }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
