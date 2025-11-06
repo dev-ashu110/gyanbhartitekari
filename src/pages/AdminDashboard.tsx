@@ -11,6 +11,7 @@ import { EventManager } from '@/components/admin/EventManager';
 import { NoticeManager } from '@/components/admin/NoticeManager';
 import { GalleryManager } from '@/components/admin/GalleryManager';
 import { TimetableManager } from '@/components/admin/TimetableManager';
+import { UserManagement } from '@/components/admin/UserManagement';
 import { PageTransition } from '@/components/PageTransition';
 import { AccessDenied } from '@/components/AccessDenied';
 import {
@@ -27,7 +28,8 @@ import {
   Calendar,
   Bell,
   Image,
-  CalendarClock
+  CalendarClock,
+  UsersRound
 } from 'lucide-react';
 
 interface DashboardStats {
@@ -434,9 +436,13 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="all" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 gap-2">
+                <TabsList className="grid w-full grid-cols-2 lg:grid-cols-7 gap-2">
                   <TabsTrigger value="all">All Students</TabsTrigger>
                   <TabsTrigger value="recent">Recent</TabsTrigger>
+                  <TabsTrigger value="users">
+                    <UsersRound className="h-4 w-4 mr-2" />
+                    Users
+                  </TabsTrigger>
                   <TabsTrigger value="events">
                     <Calendar className="h-4 w-4 mr-2" />
                     Events
@@ -545,6 +551,10 @@ export default function AdminDashboard() {
                       </div>
                     )}
                   </div>
+                </TabsContent>
+
+                <TabsContent value="users" className="mt-6">
+                  <UserManagement />
                 </TabsContent>
 
                 <TabsContent value="events" className="mt-6">
