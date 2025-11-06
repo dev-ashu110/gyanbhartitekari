@@ -12,6 +12,8 @@ import { NoticeManager } from '@/components/admin/NoticeManager';
 import { GalleryManager } from '@/components/admin/GalleryManager';
 import { TimetableManager } from '@/components/admin/TimetableManager';
 import { UserManagement } from '@/components/admin/UserManagement';
+import { FeedbackManager } from '@/components/admin/FeedbackManager';
+import { ActivityAnalytics } from '@/components/admin/ActivityAnalytics';
 import { PageTransition } from '@/components/PageTransition';
 import { AccessDenied } from '@/components/AccessDenied';
 import {
@@ -29,7 +31,9 @@ import {
   Bell,
   Image,
   CalendarClock,
-  UsersRound
+  UsersRound,
+  MessageSquare,
+  Activity
 } from 'lucide-react';
 
 interface DashboardStats {
@@ -436,9 +440,17 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="all" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 lg:grid-cols-7 gap-2">
+                <TabsList className="grid w-full grid-cols-2 lg:grid-cols-9 gap-2">
                   <TabsTrigger value="all">All Students</TabsTrigger>
                   <TabsTrigger value="recent">Recent</TabsTrigger>
+                  <TabsTrigger value="feedback">
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Feedback
+                  </TabsTrigger>
+                  <TabsTrigger value="activity">
+                    <Activity className="h-4 w-4 mr-2" />
+                    Activity
+                  </TabsTrigger>
                   <TabsTrigger value="users">
                     <UsersRound className="h-4 w-4 mr-2" />
                     Users
@@ -551,6 +563,14 @@ export default function AdminDashboard() {
                       </div>
                     )}
                   </div>
+                </TabsContent>
+
+                <TabsContent value="feedback" className="mt-6">
+                  <FeedbackManager />
+                </TabsContent>
+
+                <TabsContent value="activity" className="mt-6">
+                  <ActivityAnalytics />
                 </TabsContent>
 
                 <TabsContent value="users" className="mt-6">

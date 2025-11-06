@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Youtube, Mail, Phone, MapPin } from 'lucide-react';
+import { AboutProjectModal } from '@/components/AboutProjectModal';
+import { FeedbackPortal } from '@/components/FeedbackPortal';
 
 export const Footer = () => {
   return (
@@ -102,6 +104,23 @@ export const Footer = () => {
         </div>
 
         <div className="border-t border-border mt-8 pt-8 space-y-4">
+          <div className="flex justify-center gap-4 mb-4">
+            <AboutProjectModal />
+            <FeedbackPortal />
+          </div>
+          
+          {/* Glowing Divider */}
+          <div className="relative py-4">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-primary/20"></div>
+            </div>
+            <div className="relative flex justify-center">
+              <div className="bg-background px-4">
+                <div className="h-2 w-2 rounded-full bg-primary animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+          
           <div className="text-center">
             <p className="text-sm text-muted-foreground">
               &copy; {new Date().getFullYear()} Gyan Bharti Sr. Sec. School — All rights reserved

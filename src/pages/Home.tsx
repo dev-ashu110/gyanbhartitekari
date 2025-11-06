@@ -6,15 +6,18 @@ import { Card } from '@/components/ui/card';
 import { CardGlass } from '@/components/CardGlass';
 import { TypewriterText } from '@/components/TypewriterText';
 import { TouchFeedback } from '@/components/TouchFeedback';
+import { SmartGreeting } from '@/components/SmartGreeting';
 import { useAuth } from '@/contexts/AuthContext';
 import PageWrapper from '@/components/PageWrapper';
 import { AchievementsSection } from '@/components/AchievementsSection';
 import { TestimonialsCarousel } from '@/components/TestimonialsCarousel';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useActivityLogger } from '@/hooks/useActivityLogger';
 
 export default function Home() {
   const { user, profile } = useAuth();
+  const { logActivity } = useActivityLogger();
   const [counts, setCounts] = useState({
     students: '5500+',
     faculty: '150+',
@@ -40,7 +43,12 @@ export default function Home() {
       }
     };
     fetchCounts();
-  }, []);
+    
+    // Log page visit
+    if (user) {
+      logActivity('page_visit', { page: 'home' });
+    }
+  }, [user]);
 
   const typewriterTexts = [
     "Empowering Minds, Inspiring Futures",
@@ -76,6 +84,18 @@ export default function Home() {
             transition={{ duration: 0.8 }}
             className="text-center max-w-4xl mx-auto"
           >
+            {/* Smart Greeting for logged-in users */}
+            {user && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="mb-6 flex justify-center"
+              >
+                <SmartGreeting />
+              </motion.div>
+            )}
+            
             <motion.h1
               className="text-5xl md:text-7xl font-heading font-bold mb-6"
               animate={{

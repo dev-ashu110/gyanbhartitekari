@@ -53,6 +53,30 @@ export type Database = {
         }
         Relationships: []
       }
+      activity_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       analytics_logs: {
         Row: {
           created_at: string | null
@@ -135,6 +159,7 @@ export type Database = {
           description: string | null
           id: string
           participants: string | null
+          registration_count: number | null
           time: string | null
           title: string
           type: string
@@ -148,6 +173,7 @@ export type Database = {
           description?: string | null
           id?: string
           participants?: string | null
+          registration_count?: number | null
           time?: string | null
           title: string
           type: string
@@ -161,11 +187,48 @@ export type Database = {
           description?: string | null
           id?: string
           participants?: string | null
+          registration_count?: number | null
           time?: string | null
           title?: string
           type?: string
           updated_at?: string | null
           venue?: string | null
+        }
+        Relationships: []
+      }
+      feedback: {
+        Row: {
+          admin_reply: string | null
+          category: string
+          created_at: string
+          id: string
+          message: string
+          rating: number | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          admin_reply?: string | null
+          category: string
+          created_at?: string
+          id?: string
+          message: string
+          rating?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          admin_reply?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          message?: string
+          rating?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -220,8 +283,10 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           date: string
+          expires_at: string | null
           id: string
           pinned: boolean | null
+          tags: string[] | null
           title: string
           updated_at: string | null
         }
@@ -231,8 +296,10 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           date: string
+          expires_at?: string | null
           id?: string
           pinned?: boolean | null
+          tags?: string[] | null
           title: string
           updated_at?: string | null
         }
@@ -242,8 +309,10 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           date?: string
+          expires_at?: string | null
           id?: string
           pinned?: boolean | null
+          tags?: string[] | null
           title?: string
           updated_at?: string | null
         }
@@ -287,6 +356,7 @@ export type Database = {
           created_at: string
           full_name: string | null
           id: string
+          profile_photo_url: string | null
           updated_at: string
           verified: boolean | null
         }
@@ -294,6 +364,7 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id: string
+          profile_photo_url?: string | null
           updated_at?: string
           verified?: boolean | null
         }
@@ -301,6 +372,7 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          profile_photo_url?: string | null
           updated_at?: string
           verified?: boolean | null
         }
@@ -686,6 +758,33 @@ export type Database = {
           period_name?: string
           start_time?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          profile_photo_url: string | null
+          theme: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          profile_photo_url?: string | null
+          theme?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          profile_photo_url?: string | null
+          theme?: string | null
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
