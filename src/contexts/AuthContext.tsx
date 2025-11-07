@@ -33,12 +33,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Fetch profile data
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('id, full_name, created_at')
+        .select('id, full_name, created_at, status')
         .eq('id', userId)
         .single();
 
       if (profileError) {
         console.error('Error fetching profile:', profileError);
+        return null;
+      }
+
+      // Check if user is banned
+      if (profileData?.status === 'banned') {
+        await supabase.auth.signOut();
+        toast({
+          title: 'Access Denied',
+          description: 'Your account has been suspended. Please contact the administrator.',
+          variant: 'destructive',
+        });
         return null;
       }
 

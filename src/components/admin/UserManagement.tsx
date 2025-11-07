@@ -8,12 +8,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users, 
   ShieldCheck, 
-  ShieldAlert, 
   Mail, 
   Calendar,
   RefreshCw,
   CheckCircle2,
-  XCircle
+  XCircle,
+  Ban,
+  Trash2,
+  Shield,
+  BookOpen,
+  GraduationCap,
+  UserCog
 } from 'lucide-react';
 import {
   Select,
@@ -32,27 +37,29 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { format } from 'date-fns';
 
 interface UserProfile {
   id: string;
   full_name: string | null;
-  verified: boolean;
+  email: string | null;
+  status: string;
   created_at: string;
-  email?: string;
-  current_role?: string | null;
+  role: string | null;
 }
 
 const ROLES = [
-  { value: 'visitor', label: 'Visitor', icon: '👁️' },
-  { value: 'student', label: 'Student', icon: '🎓' },
-  { value: 'teacher', label: 'Teacher', icon: '👨‍🏫' },
-  { value: 'admin', label: 'Admin', icon: '🔐' },
+  { value: 'visitor', label: 'Visitor', icon: Users },
+  { value: 'student', label: 'Student', icon: GraduationCap },
+  { value: 'teacher', label: 'Teacher', icon: BookOpen },
+  { value: 'admin', label: 'Admin', icon: Shield },
 ];
 
 export const UserManagement = () => {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedUser, setSelectedUser] = useState<{ userId: string; newRole: string } | null>(null);
+  const [selectedUser, setSelectedUser] = useState<{ id: string; name: string; newRole: string } | null>(null);
+  const [actionDialog, setActionDialog] = useState<{ type: 'ban' | 'unban' | 'delete'; userId: string; userName: string } | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -79,43 +86,39 @@ export const UserManagement = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-
+      
       // Fetch all profiles
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, full_name, email, status, created_at')
         .order('created_at', { ascending: false });
 
       if (profilesError) throw profilesError;
 
-      // For each profile, fetch their email from auth.users and their role
-      const enrichedUsers = await Promise.all(
-        (profiles || []).map(async (profile) => {
-          // Fetch role
-          const { data: roles } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', profile.id)
-            .limit(1);
+      // Fetch all user roles
+      const { data: roles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role');
 
-          // Note: We can't directly query auth.users, so we'll skip email for now
-          // In a real scenario, you'd need to use a Supabase Edge Function to get emails
-          
-          return {
-            ...profile,
-            current_role: roles && roles.length > 0 ? roles[0].role : null,
-          };
-        })
-      );
+      if (rolesError) throw rolesError;
 
-      setUsers(enrichedUsers);
+      // Combine profiles with their roles
+      const usersWithRoles: UserProfile[] = (profiles || []).map(profile => {
+        const userRole = roles?.find(r => r.user_id === profile.id);
+        return {
+          ...profile,
+          role: userRole?.role || null
+        };
+      });
+
+      setUsers(usersWithRoles);
     } catch (error: any) {
+      console.error('Error fetching users:', error);
       toast({
         title: 'Error',
-        description: 'Failed to load users',
+        description: 'Failed to load users. Please try again.',
         variant: 'destructive',
       });
-      console.error('Error fetching users:', error);
     } finally {
       setLoading(false);
     }
@@ -125,20 +128,20 @@ export const UserManagement = () => {
     if (!selectedUser) return;
 
     try {
-      const { userId, newRole } = selectedUser;
+      const { id, newRole } = selectedUser;
 
       // Check if user already has any role
       const { data: existingRoles } = await supabase
         .from('user_roles')
         .select('id, role')
-        .eq('user_id', userId);
+        .eq('user_id', id);
 
       if (existingRoles && existingRoles.length > 0) {
         // Update existing role
         const { error: updateError } = await supabase
           .from('user_roles')
           .update({ role: newRole as any })
-          .eq('user_id', userId);
+          .eq('user_id', id);
 
         if (updateError) throw updateError;
       } else {
@@ -146,12 +149,18 @@ export const UserManagement = () => {
         const { error: insertError } = await supabase
           .from('user_roles')
           .insert({
-            user_id: userId,
+            user_id: id,
             role: newRole as any,
           });
 
         if (insertError) throw insertError;
       }
+
+      // Update status to active when role is assigned
+      await supabase
+        .from('profiles')
+        .update({ status: 'active' })
+        .eq('id', id);
 
       toast({
         title: 'Role Updated',
@@ -170,7 +179,92 @@ export const UserManagement = () => {
     }
   };
 
-  const getRoleBadgeVariant = (role: string | null | undefined) => {
+  const handleBanUser = async (userId: string) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ status: 'banned' })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'User Banned',
+        description: 'The user has been successfully banned.',
+      });
+      
+      fetchUsers();
+    } catch (error: any) {
+      console.error('Error banning user:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to ban user. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setActionDialog(null);
+    }
+  };
+
+  const handleUnbanUser = async (userId: string) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ status: 'active' })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'User Unbanned',
+        description: 'The user has been successfully unbanned.',
+      });
+      
+      fetchUsers();
+    } catch (error: any) {
+      console.error('Error unbanning user:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to unban user. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setActionDialog(null);
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      // Delete from user_roles first (foreign key constraint)
+      await supabase.from('user_roles').delete().eq('user_id', userId);
+      
+      // Delete profile
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'User Deleted',
+        description: 'The user has been successfully deleted.',
+      });
+      
+      fetchUsers();
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete user. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setActionDialog(null);
+    }
+  };
+
+  const getRoleBadgeVariant = (role: string | null) => {
     switch (role) {
       case 'admin':
         return 'destructive';
@@ -178,8 +272,25 @@ export const UserManagement = () => {
         return 'default';
       case 'student':
         return 'secondary';
+      case 'visitor':
+        return 'outline';
       default:
         return 'outline';
+    }
+  };
+
+  const getRoleIcon = (role: string | null) => {
+    switch (role) {
+      case 'admin':
+        return Shield;
+      case 'teacher':
+        return BookOpen;
+      case 'student':
+        return GraduationCap;
+      case 'visitor':
+        return Users;
+      default:
+        return UserCog;
     }
   };
 
@@ -229,79 +340,135 @@ export const UserManagement = () => {
         {/* Users Grid */}
         <div className="grid gap-4">
           <AnimatePresence>
-            {users.map((user, index) => (
-              <motion.div
-                key={user.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-              >
-                <Card className="glass group hover:glass-strong transition-all duration-300">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                      {/* User Info */}
-                      <div className="flex-1 space-y-3">
-                        <div className="flex items-start gap-3">
-                          <div className="p-2 rounded-full bg-primary/10">
-                            <ShieldCheck className="h-5 w-5 text-primary" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h4 className="text-lg font-bold text-foreground">
-                                {user.full_name || 'Unknown User'}
+            {users.map((user, index) => {
+              const RoleIcon = getRoleIcon(user.role);
+              return (
+                <motion.div
+                  key={user.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                >
+                  <Card className="glass group hover:glass-strong transition-all duration-300">
+                    <CardContent className="p-6">
+                      <div className="space-y-4">
+                        {/* User Header */}
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                              <RoleIcon className="h-6 w-6 text-primary" />
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-lg flex items-center gap-2">
+                                {user.full_name || 'Unnamed User'}
                               </h4>
-                              {user.verified ? (
-                                <CheckCircle2 className="h-4 w-4 text-green-500" />
-                              ) : (
-                                <XCircle className="h-4 w-4 text-yellow-500" />
-                              )}
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <Mail className="h-3 w-3" />
+                                {user.email || 'No email'}
+                              </div>
                             </div>
-                            <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                              <span className="flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
-                                Joined {new Date(user.created_at).toLocaleDateString()}
-                              </span>
-                              <Badge variant={user.verified ? 'secondary' : 'outline'}>
-                                {user.verified ? 'Verified' : 'Unverified'}
-                              </Badge>
-                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Badge 
+                              variant={user.status === 'banned' ? 'destructive' : user.status === 'active' ? 'default' : 'outline'}
+                            >
+                              {user.status === 'banned' && <Ban className="h-3 w-3 mr-1" />}
+                              {user.status === 'active' && <CheckCircle2 className="h-3 w-3 mr-1" />}
+                              {user.status === 'pending' && <XCircle className="h-3 w-3 mr-1" />}
+                              {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        {/* User Details */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-border/50">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">Joined</span>
+                            <span className="text-sm font-medium flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {format(new Date(user.created_at), 'MMM dd, yyyy')}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">Current Role</span>
+                            <Badge variant={getRoleBadgeVariant(user.role)}>
+                              {user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'No Role'}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex flex-col sm:flex-row gap-3 pt-3 border-t border-border/50">
+                          <div className="flex-1">
+                            <label className="text-xs font-medium text-muted-foreground mb-2 block">
+                              Assign Role
+                            </label>
+                            <Select
+                              value={user.role || ''}
+                              onValueChange={(newRole) => {
+                                setSelectedUser({
+                                  id: user.id,
+                                  name: user.full_name || 'User',
+                                  newRole
+                                });
+                              }}
+                            >
+                              <SelectTrigger className="glass">
+                                <SelectValue placeholder="Select role" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {ROLES.map((role) => {
+                                  const Icon = role.icon;
+                                  return (
+                                    <SelectItem key={role.value} value={role.value}>
+                                      <div className="flex items-center gap-2">
+                                        <Icon className="h-4 w-4" />
+                                        {role.label}
+                                      </div>
+                                    </SelectItem>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="flex gap-2">
+                            {user.status === 'banned' ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setActionDialog({ type: 'unban', userId: user.id, userName: user.full_name || 'User' })}
+                              >
+                                <CheckCircle2 className="h-4 w-4 mr-2" />
+                                Unban
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setActionDialog({ type: 'ban', userId: user.id, userName: user.full_name || 'User' })}
+                              >
+                                <Ban className="h-4 w-4 mr-2" />
+                                Ban
+                              </Button>
+                            )}
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => setActionDialog({ type: 'delete', userId: user.id, userName: user.full_name || 'User' })}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </Button>
                           </div>
                         </div>
                       </div>
-
-                      {/* Role Management */}
-                      <div className="flex items-center gap-3">
-                        <div className="text-right">
-                          <p className="text-xs text-muted-foreground mb-1">Current Role</p>
-                          <Badge variant={getRoleBadgeVariant(user.current_role)} className="capitalize">
-                            {ROLES.find((r) => r.value === user.current_role)?.icon}{' '}
-                            {user.current_role || 'No Role'}
-                          </Badge>
-                        </div>
-                        <Select
-                          value={user.current_role || 'visitor'}
-                          onValueChange={(value) =>
-                            setSelectedUser({ userId: user.id, newRole: value })
-                          }
-                        >
-                          <SelectTrigger className="w-[180px] glass">
-                            <SelectValue placeholder="Change role" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {ROLES.map((role) => (
-                              <SelectItem key={role.value} value={role.value}>
-                                {role.icon} {role.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
           </AnimatePresence>
         </div>
 
@@ -318,14 +485,14 @@ export const UserManagement = () => {
         )}
       </motion.div>
 
-      {/* Confirmation Dialog */}
+      {/* Role Change Confirmation Dialog */}
       <AlertDialog open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>
         <AlertDialogContent className="glass-strong">
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm Role Change</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to change this user's role to{' '}
-              <span className="font-bold capitalize">{selectedUser?.newRole}</span>?
+              Are you sure you want to change <strong>{selectedUser?.name}</strong>'s role to{' '}
+              <strong className="capitalize">{selectedUser?.newRole}</strong>?
               <br />
               <br />
               This will update their access permissions immediately.
@@ -334,6 +501,55 @@ export const UserManagement = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleRoleChange}>Confirm</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Ban/Unban/Delete Confirmation Dialog */}
+      <AlertDialog open={!!actionDialog} onOpenChange={() => setActionDialog(null)}>
+        <AlertDialogContent className="glass-strong">
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {actionDialog?.type === 'ban' && 'Ban User'}
+              {actionDialog?.type === 'unban' && 'Unban User'}
+              {actionDialog?.type === 'delete' && 'Delete User'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {actionDialog?.type === 'ban' && (
+                <>
+                  Are you sure you want to ban <strong>{actionDialog.userName}</strong>? They will not be able to log in until unbanned.
+                </>
+              )}
+              {actionDialog?.type === 'unban' && (
+                <>
+                  Are you sure you want to unban <strong>{actionDialog.userName}</strong>? They will be able to log in again.
+                </>
+              )}
+              {actionDialog?.type === 'delete' && (
+                <>
+                  Are you sure you want to permanently delete <strong>{actionDialog?.userName}</strong>? This action cannot be undone.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (actionDialog?.type === 'ban') {
+                  handleBanUser(actionDialog.userId);
+                } else if (actionDialog?.type === 'unban') {
+                  handleUnbanUser(actionDialog.userId);
+                } else if (actionDialog?.type === 'delete') {
+                  handleDeleteUser(actionDialog.userId);
+                }
+              }}
+              className={actionDialog?.type === 'delete' ? 'bg-destructive hover:bg-destructive/90' : ''}
+            >
+              {actionDialog?.type === 'ban' && 'Ban User'}
+              {actionDialog?.type === 'unban' && 'Unban User'}
+              {actionDialog?.type === 'delete' && 'Delete User'}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

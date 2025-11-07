@@ -354,25 +354,31 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          email: string | null
           full_name: string | null
           id: string
           profile_photo_url: string | null
+          status: string | null
           updated_at: string
           verified: boolean | null
         }
         Insert: {
           created_at?: string
+          email?: string | null
           full_name?: string | null
           id: string
           profile_photo_url?: string | null
+          status?: string | null
           updated_at?: string
           verified?: boolean | null
         }
         Update: {
           created_at?: string
+          email?: string | null
           full_name?: string | null
           id?: string
           profile_photo_url?: string | null
+          status?: string | null
           updated_at?: string
           verified?: boolean | null
         }

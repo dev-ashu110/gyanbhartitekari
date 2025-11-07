@@ -9,15 +9,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, LogIn, UserPlus } from 'lucide-react';
-import { RoleSelectionDialog } from '@/components/RoleSelectionDialog';
 
 const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [showRoleDialog, setShowRoleDialog] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -25,7 +22,6 @@ const Auth = () => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        setCurrentUserId(session.user.id);
         // Defer any Supabase calls to avoid deadlocks
         setTimeout(() => {
           checkUserRole(session.user.id);
@@ -36,7 +32,6 @@ const Auth = () => {
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        setCurrentUserId(session.user.id);
         setTimeout(() => {
           checkUserRole(session.user.id);
         }, 0);
@@ -46,33 +41,34 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const fetchProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, full_name')
-        .eq('id', userId)
-        .single();
-      if (error) throw error;
-      return data;
-    } catch (err) {
-      console.error('Error fetching profile:', err);
-      return null;
-    }
-  };
-
   const checkUserRole = async (userId: string) => {
     try {
-      // Ensure profile exists (created by trigger); ignore failures
-      await fetchProfile(userId);
+      // Check if user is banned
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('status')
+        .eq('id', userId)
+        .single();
 
+      if (profileError) throw profileError;
+
+      if (profile?.status === 'banned') {
+        await supabase.auth.signOut();
+        toast({
+          title: 'Access Denied',
+          description: 'Your account has been suspended. Please contact the administrator.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Check user role
       const { data: roles, error } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', userId)
         .limit(1);
 
-      // If PostgREST returns 406 (no rows to coerce), treat as no role assigned
       if (error && (error as any)?.code !== 'PGRST116') {
         throw error;
       }
@@ -81,13 +77,21 @@ const Auth = () => {
         const userRole = roles[0].role;
         redirectByRole(userRole);
       } else {
-        setCurrentUserId(userId);
-        setShowRoleDialog(true);
+        // No role assigned yet - show pending message
+        toast({
+          title: 'Account Created Successfully!',
+          description: 'Waiting for admin approval to assign your role. You will be notified once approved.',
+        });
+        navigate('/');
       }
     } catch (error: any) {
       console.error('Error checking user role:', error);
-      setCurrentUserId(userId);
-      setShowRoleDialog(true);
+      toast({
+        title: 'Error',
+        description: 'Failed to verify account status. Please try again.',
+        variant: 'destructive',
+      });
+      navigate('/');
     }
   };
 
@@ -128,8 +132,8 @@ const Auth = () => {
       if (error) throw error;
 
       toast({
-        title: 'Verification Email Sent!',
-        description: 'Please check your email and click the verification link to activate your account.',
+        title: 'Account Created Successfully!',
+        description: 'Waiting for admin approval to assign your role. You will be notified once approved.',
       });
       
       // Clear form
@@ -324,14 +328,6 @@ const Auth = () => {
         </div>
       </div>
 
-      {/* Role Selection Dialog */}
-      {currentUserId && (
-        <RoleSelectionDialog
-          open={showRoleDialog}
-          onOpenChange={setShowRoleDialog}
-          userId={currentUserId}
-        />
-      )}
     </>
   );
 };
